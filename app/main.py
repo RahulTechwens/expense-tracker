@@ -9,7 +9,7 @@ app = FastAPI()
 # Mount the 'upload' directory
 app.mount("/upload", StaticFiles(directory=settings.UPLOAD_DIR), name="upload")
 
-# Include routers for different routes
+# Include routers
 app.include_router(expense_router)
 
 if __name__ == "__main__":

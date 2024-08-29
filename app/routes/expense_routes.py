@@ -24,10 +24,10 @@ async def expense_detail(expense_request: ExpenseRequest):
         return {"amount":amount, "description":description, "result": result, }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-# app/controllers/image_upload.py
 
 
-# Define the upload directory inside 'app'
+
+# Define the upload directory
 UPLOAD_DIR = Path(Settings.UPLOAD_DIR)
 
 # Ensure the upload directory exists
@@ -38,18 +38,17 @@ async def upload_image(image: UploadFile = File(...)):
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid image format")
 
-    # Define the file path in the 'app/upload' directory
+    # Define the file path 
     file_path = UPLOAD_DIR / image.filename
 
-    # Save the image to the file system
+    # Save the image in upload file
     with open(file_path, "wb") as buffer:
         buffer.write(await image.read())
 
-    # Store the image path and other metadata in MongoDB
+    # Store the image path in MongoDB
     db = await mongodb.get_database()
     collection = db["images"]  # Use the "images" collection
 
-    # Prepend the base URL to the file path
     base_url = "http://127.0.0.1:8000/"
     document = {
         "image_filename": image.filename,

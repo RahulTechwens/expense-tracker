@@ -1,5 +1,3 @@
-# app/database/connection.py
-
 from motor.motor_asyncio import AsyncIOMotorClient
 
 class MongoDB:
@@ -10,5 +8,5 @@ class MongoDB:
     async def get_database(self):
         return self.db
 
-# Initialize the connection with database name
+# connection
 mongodb = MongoDB("mongodb+srv://nelaykarmakar:0u7rxkmMOxmXJFjj@expensetracker.i0cqo.mongodb.net/", "expenses")
