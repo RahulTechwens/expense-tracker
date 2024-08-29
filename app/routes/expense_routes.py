@@ -14,13 +14,11 @@ router = APIRouter()
 async def read_root():
     return {"message": "Welcome to the Expense Tracker API"}
 
-# POST endpoint
 @router.post("/expense_detail")
 async def expense_detail(expense_request: ExpenseRequest):
     amount = expense_request.amount
     description = expense_request.description
-    
-    # Await the async function to insert the data into MongoDB
+
     try:
         result = await entry_expense(amount, description)
         return {"amount":amount, "description":description, "result": result, }
