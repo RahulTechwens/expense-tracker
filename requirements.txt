@@ -1,1 +1,9 @@
-pandas
+motor
+python-dotenv
+fastapi
+uvicorn
+pydantic-settings
+pydantic
+sqlalchemy
+pytest
+python-multipart
