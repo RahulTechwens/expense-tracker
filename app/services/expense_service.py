@@ -4,12 +4,37 @@ from typing import List, Dict
 from datetime import datetime, timedelta
 
 
-async def insert_expense(amount:str, description:str):
+
+async def insert_expense(expense_request: ExpenseRequest):
+    cat= expense_request.cat
+    merchant= expense_request.merchant
+    acct= expense_request.acct
+    bank= expense_request.bank
+    date= expense_request.date
+    body= expense_request.body
+    amount= expense_request.amount
+    type= expense_request.type
+    method= expense_request.method
+    manual= expense_request.manual
+    keywords= expense_request.keywords
+    vector= expense_request.vector
+    
+    
     db = await mongodb.get_database()
     collection = db["expenses"]
     document = {
+        "cat": cat,
+        "merchant": merchant,
+        "acct": acct,
+        "bank": bank,
+        "date": date,
+        "body": body,
         "amount": amount,
-        "description": description,
+        "type": type,
+        "method": method,
+        "manual": manual,
+        "keywords": keywords,
+        "vector": vector
     }
     insert_result = await collection.insert_one(document)
     return {"inserted_id": str(insert_result.inserted_id)}
