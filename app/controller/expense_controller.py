@@ -18,6 +18,10 @@ async def create_expense(expense_request: ExpenseRequest):
     
 async def filter(cat):
     try:
+        if cat:
+            cat = cat.split(',')   
+        else:
+            cat = []     
         result = await filter_sms_category(cat)
         return JSONResponse(
             status_code=200,

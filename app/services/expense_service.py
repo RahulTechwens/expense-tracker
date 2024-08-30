@@ -17,7 +17,10 @@ async def insert_expense(amount:str, description:str):
 async def filter_sms_category (categories: List[str]):
     db = await mongodb.get_database()
     collection = db["demo_sms_data"]
-    cursor = collection.find({"cat": {"$in": [categories]}})
+    if len(categories) > 0:
+        cursor = collection.find({"cat": {"$in": categories}})
+    else:
+        cursor = collection.find()
     data = await cursor.to_list(length=None)
     for item in data:
         item["_id"] = str(item["_id"])
