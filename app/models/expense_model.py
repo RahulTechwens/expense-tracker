@@ -18,3 +18,13 @@ class Expense(Document):
     meta = {
         'collection': 'demo_sms_data'
     }
+    
+    
+class Cat(Document):
+    icon_id = IntField(required=True)
+    label = StringField(required=True)
+    meta = {
+        'collection': 'categories'
+    }
+    
+    

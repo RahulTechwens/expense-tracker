@@ -1,5 +1,5 @@
 from app.db.connection import mongodb
-from app.models.expense_model import Expense
+from app.models.expense_model import Expense, Cat
 from typing import List, Dict
 from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q # type: ignore
@@ -22,6 +22,15 @@ async def insert_expense(expense_request):
     )
     expense.save()
     return {"inserted_id": str(expense.id)}
+
+
+async def insert_cat(expense_request):
+    cat = Cat(
+        icon_id=expense_request.get('icon_id'),
+        label=expense_request.get('label'),
+    )
+    cat.save()
+    return {"inserted_id": str(cat.id)}
 
 
 async def filter_sms_category (categories: List[str], start_date, end_date):
