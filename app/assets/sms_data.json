@@ -1,11 +1,10 @@
 [
     {
-        "id": 1,
         "cat": "food",
         "merchant": "Swiggy",
         "acct": "XXXX4567",
         "bank": "ICICI",
-        "date": "2024-08-05",
+        "date": "2024-08-05T14:32:19",
         "body": "Food delivery from Swiggy",
         "amount": 100,
         "type": "CREDIT",
@@ -15,12 +14,11 @@
         "vector": []
     },
     {
-        "id": 2,
         "cat": "grocery",
         "merchant": "JioMart",
         "acct": null,
         "bank": null,
-        "date": "2024-08-03",
+        "date": "2024-08-03T09:15:43",
         "body": "Grocery purchase from JioMart",
         "amount": 456,
         "type": "CREDIT",
@@ -30,12 +28,11 @@
         "vector": []
     },
     {
-        "id": 3,
         "cat": "electronics",
         "merchant": "Amazon",
         "acct": "XXXX7890",
         "bank": "HDFC",
-        "date": "2024-08-10",
+        "date": "2024-08-10T18:22:10",
         "body": "Purchased electronics from Amazon",
         "amount": 1200,
         "type": "DEBIT",
@@ -45,12 +42,11 @@
         "vector": []
     },
     {
-        "id": 4,
         "cat": "clothing",
         "merchant": "Myntra",
         "acct": "XXXX1234",
         "bank": "SBI",
-        "date": "2024-08-07",
+        "date": "2024-08-07T11:47:25",
         "body": "Clothing purchase from Myntra",
         "amount": 800,
         "type": "CREDIT",
@@ -60,12 +56,11 @@
         "vector": []
     },
     {
-        "id": 5,
         "cat": "food",
         "merchant": "Zomato",
         "acct": "XXXX2345",
         "bank": "Axis",
-        "date": "2024-08-15",
+        "date": "2024-08-15T20:14:36",
         "body": "Food delivery from Zomato",
         "amount": 250,
         "type": "CREDIT",
@@ -75,12 +70,11 @@
         "vector": []
     },
     {
-        "id": 6,
         "cat": "entertainment",
         "merchant": "Netflix",
         "acct": null,
         "bank": null,
-        "date": "2024-08-12",
+        "date": "2024-08-12T07:59:03",
         "body": "Monthly subscription for Netflix",
         "amount": 500,
         "type": "DEBIT",
@@ -90,12 +84,11 @@
         "vector": []
     },
     {
-        "id": 7,
         "cat": "travel",
         "merchant": "Uber",
         "acct": "XXXX3456",
         "bank": "ICICI",
-        "date": "2024-08-04",
+        "date": "2024-08-04T22:21:47",
         "body": "Cab ride with Uber",
         "amount": 150,
         "type": "CREDIT",
@@ -105,12 +98,11 @@
         "vector": []
     },
     {
-        "id": 8,
         "cat": "health",
         "merchant": "Apollo Pharmacy",
         "acct": "XXXX4567",
         "bank": "HDFC",
-        "date": "2024-08-18",
+        "date": "2024-08-18T10:02:56",
         "body": "Medicines from Apollo Pharmacy",
         "amount": 300,
         "type": "CREDIT",
@@ -120,12 +112,11 @@
         "vector": []
     },
     {
-        "id": 9,
         "cat": "grocery",
         "merchant": "BigBasket",
         "acct": "XXXX5678",
         "bank": "SBI",
-        "date": "2024-08-16",
+        "date": "2024-08-16T15:34:12",
         "body": "Grocery shopping from BigBasket",
         "amount": 600,
         "type": "CREDIT",
@@ -135,12 +126,11 @@
         "vector": []
     },
     {
-        "id": 10,
         "cat": "travel",
         "merchant": "MakeMyTrip",
         "acct": "XXXX6789",
         "bank": "Axis",
-        "date": "2024-08-22",
+        "date": "2024-08-22T19:45:33",
         "body": "Flight booking with MakeMyTrip",
         "amount": 5000,
         "type": "DEBIT",
@@ -150,12 +140,11 @@
         "vector": []
     },
     {
-        "id": 11,
         "cat": "food",
         "merchant": "Domino's Pizza",
         "acct": "XXXX7890",
         "bank": "HDFC",
-        "date": "2024-08-08",
+        "date": "2024-08-08T12:56:48",
         "body": "Pizza order from Domino's",
         "amount": 350,
         "type": "CREDIT",
@@ -165,12 +154,11 @@
         "vector": []
     },
     {
-        "id": 12,
         "cat": "clothing",
         "merchant": "Zara",
         "acct": "XXXX8901",
         "bank": "ICICI",
-        "date": "2024-08-14",
+        "date": "2024-08-14T16:23:01",
         "body": "Clothing purchase from Zara",
         "amount": 2200,
         "type": "DEBIT",
@@ -180,12 +168,11 @@
         "vector": []
     },
     {
-        "id": 13,
         "cat": "utilities",
         "merchant": "Tata Power",
         "acct": "XXXX9012",
         "bank": "SBI",
-        "date": "2024-08-19",
+        "date": "2024-08-19T08:44:17",
         "body": "Electricity bill payment to Tata Power",
         "amount": 1500,
         "type": "DEBIT",
@@ -195,12 +182,11 @@
         "vector": []
     },
     {
-        "id": 14,
         "cat": "travel",
         "merchant": "Ola",
         "acct": "XXXX0123",
         "bank": "Axis",
-        "date": "2024-08-20",
+        "date": "2024-08-20T21:37:29",
         "body": "Cab ride with Ola",
         "amount": 200,
         "type": "CREDIT",
@@ -210,12 +196,11 @@
         "vector": []
     },
     {
-        "id": 15,
         "cat": "electronics",
         "merchant": "Flipkart",
         "acct": "XXXX1234",
         "bank": "ICICI",
-        "date": "2024-08-28",
+        "date": "2024-08-28T10:50:05",
         "body": "Purchased electronics from Flipkart",
         "amount": 1800,
         "type": "CREDIT",
@@ -225,12 +210,11 @@
         "vector": []
     },
     {
-        "id": 16,
         "cat": "health",
         "merchant": "1mg",
         "acct": null,
         "bank": null,
-        "date": "2024-08-02",
+        "date": "2024-08-02T14:06:52",
         "body": "Medicines from 1mg",
         "amount": 250,
         "type": "CREDIT",
@@ -240,12 +224,11 @@
         "vector": []
     },
     {
-        "id": 17,
         "cat": "food",
         "merchant": "KFC",
         "acct": "XXXX2345",
         "bank": "HDFC",
-        "date": "2024-08-30",
+        "date": "2024-08-30T18:25:47",
         "body": "Food order from KFC",
         "amount": 400,
         "type": "CREDIT",
@@ -255,12 +238,11 @@
         "vector": []
     },
     {
-        "id": 18,
         "cat": "grocery",
         "merchant": "Flipkart",
         "acct": "XXXX3456",
         "bank": "SBI",
-        "date": "2024-08-06",
+        "date": "2024-08-06T11:12:30",
         "body": "Grocery shopping from Spencers",
         "amount": 700,
         "type": "DEBIT",
@@ -270,12 +252,11 @@
         "vector": []
     },
     {
-        "id": 19,
         "cat": "entertainment",
         "merchant": "Amazon Prime",
         "acct": "XXXX4567",
         "bank": "Axis",
-        "date": "2024-08-25",
+        "date": "2024-08-25T17:09:22",
         "body": "Amazon Prime subscription",
         "amount": 1000,
         "type": "DEBIT",
@@ -285,12 +266,11 @@
         "vector": []
     },
     {
-        "id": 20,
         "cat": "travel",
         "merchant": "MakeMyTrip",
         "acct": "XXXX5678",
         "bank": "ICICI",
-        "date": "2024-08-29",
+        "date": "2024-08-29T20:18:36",
         "body": "Hotel booking with MakeMyTrip",
         "amount": 3000,
         "type": "DEBIT",
