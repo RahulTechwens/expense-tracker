@@ -1,5 +1,3 @@
-# from app.db.connection import mongodb
-# from app.controller.expense_controller import create_expense, cat_filter, date_range_filter, date_filter, fetch_all_data
 from app.models.expense_model import Expense
 from fastapi import APIRouter, Query, Request # type: ignore
 from typing import Optional
