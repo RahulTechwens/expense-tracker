@@ -16,8 +16,10 @@ async def create_expense(request: Request):
     
 async def cat_filter(cat, start_date, end_date):
     try:
-        cat = cat.split(',') if cat else [] 
-        result = await filter_sms_category(cat)
+        cat = cat.split(',') if cat else []
+        start_date = start_date or None
+        end_date = end_date or None
+        result = await filter_sms_category(cat, start_date, end_date)
         return JSONResponse(
             status_code=200,
             content={"Message": "Data Fetched Successfully", "Entered Categories":cat, "Filtered Data": result}
