@@ -26,27 +26,17 @@ async def insert_expense(expense_request):
 
 async def filter_sms_category (categories: List[str], start_date, end_date):
     query = Q()
-
-    # Filter by categories if provided
     if categories:
         query &= Q(cat__in=categories)
-    
-    # Filter by date range if provided
     if start_date and start_date:
         query &= Q(date__gte=start_date, date__lte=end_date)
     elif start_date:
         query &= Q(date__gte=start_date)
     elif end_date:
         query &= Q(date__lte=end_date)
-    
-    # Fetch the data based on the constructed query
     data = Expense.objects(query)
-    
-    # If no data is found, return an empty list
     if data.count() == 0:
         return []
-
-    # Convert the documents to a list of dictionaries
     result = []
     for item in data:
         item_dict = item.to_mongo().to_dict()
