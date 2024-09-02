@@ -14,7 +14,6 @@ async def create_expense(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-############################
 async def create_cat(request: Request):
     try:
         request_data = await request.json()
@@ -27,17 +26,29 @@ async def create_cat(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))    
 
-##############################
 
+'''To find expenses into a specific date range '''
+# async def cat_filter(cat, start_date, end_date):
+#     try:
+#         cat = cat.split(',') if cat else []
+#         start_date = start_date or None
+#         end_date = end_date or None
+#         result = await filter_sms_category(cat, start_date, end_date)
+#         return JSONResponse(
+#             status_code=200,
+#             content={"Message": "Data Fetched Successfully", "Entered Categories":cat, "Filtered Data": result}
+#         )
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+
+'''To find expenses from current day 00:00:00 to current time'''
 async def cat_filter(cat, start_date, end_date):
     try:
         cat = cat.split(',') if cat else []
         start_date = start_date or None
         end_date = end_date or None
         result = await filter_sms_category(cat, start_date, end_date)
-        return JSONResponse(
-            status_code=200,
-            content={"Message": "Data Fetched Successfully", "Entered Categories":cat, "Filtered Data": result}
-        )
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
