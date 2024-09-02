@@ -7,3 +7,4 @@ pydantic
 sqlalchemy
 pytest
 python-multipart
+mongoengine

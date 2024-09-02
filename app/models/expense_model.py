@@ -1,38 +1,20 @@
-from pydantic import BaseModel # type: ignore
-from typing import Optional
+from mongoengine import Document, StringField, IntField, BooleanField, ListField, FloatField, DateTimeField # type: ignore
+import datetime
 
-
-from pydantic import BaseModel
-from typing import List, Optional
-
-class ExpenseRequest(BaseModel):
-    cat: str
-    merchant: str
-    acct: str
-    bank: str
-    date: str
-    body: Optional[str] = None
-    amount: int
-    type: str
-    method: str
-    manual: bool
-    keywords: Optional[List[str]] = []
-    vector: Optional[List[float]] = []
-
-# Example
-'''
-    {
-        "cat": "food",
-        "merchant": "Swiggy",
-        "acct": "XXXX4567",
-        "bank": "ICICI",
-        "date": "2024-08-05",
-        "body": "Food delivery from Swiggy",
-        "amount": 100,
-        "type": "CREDIT",
-        "method": "UPI",
-        "manual": false,
-        "keywords": [],
-        "vector": []
+class Expense(Document):
+    cat = StringField(required=True)
+    merchant = StringField(required=True)
+    acct = StringField(required=True)
+    bank = StringField(required=True)
+    date = StringField(required=True)
+    # date = DateTimeField(default=datetime.datetime.time)
+    body = StringField()
+    amount = IntField(required=True)
+    type = StringField(required=True)
+    method = StringField(required=True)
+    manual = BooleanField(required=True)
+    keywords = ListField(StringField(), default=[])
+    vector = ListField(FloatField(), default=[])
+    meta = {
+        'collection': 'demo_sms_data'
     }
-'''
