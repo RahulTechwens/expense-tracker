@@ -38,7 +38,6 @@ async def insert_alert(dictData):
         alert_data = [day for day in days if list(day.values())[0] in dictData.get('alert_data')]
     elif dictData.get('alert_type').lower() == 'monthly':
         alert_data = [month for month in months if list(months.values())[0] in dictData.get('alert_data')]
-    print(alert_data)
     alert = Alert(
         alert_type = dictData.get('alert_type').lower(),
         alert_data = alert_data,
@@ -50,8 +49,10 @@ async def insert_alert(dictData):
     return {"inserted_id": str(alert.id)}
 
 async def check_categories(category_data: List['str']):
-    object_ids = [ObjectId(id_) for id_ in category_data]
-    categories = Cat.objects(id__in=object_ids)
+    if not category_data:
+        return []
+    object_ids = [icon_id for icon_id in category_data]
+    categories = Cat.objects(icon_id__in=object_ids)
     result_categories = []
     for category in categories:
         category_dict = category.to_mongo().to_dict()
@@ -59,3 +60,13 @@ async def check_categories(category_data: List['str']):
         result_categories.append(category_dict)
     
     return len(result_categories)
+
+async def all_alerts():
+    alerts = Alert.objects()
+    result_alerts = []
+    for alert in alerts:
+        alert_dict = alert.to_mongo().to_dict()
+        alert_dict["_id"] = str(alert_dict["_id"])
+        result_alerts.append(alert_dict)
+    
+    return result_alerts
