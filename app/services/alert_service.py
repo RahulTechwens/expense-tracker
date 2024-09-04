@@ -33,11 +33,11 @@ class AlertService:
 
     ]
 
-    async def insert_alert(dictData):
+    async def insert_alert(self, dictData):
         if dictData.get('alert_type').lower() == 'daily':
-            alert_data = [day for day in days if list(day.values())[0] in dictData.get('alert_data')]
+            alert_data = [day for day in self.days if list(day.values())[0] in dictData.get('alert_data')]
         elif dictData.get('alert_type').lower() == 'monthly':
-            alert_data = [month for month in months if list(months.values())[0] in dictData.get('alert_data')]
+            alert_data = [month for month in self.months if list(self.months.values())[0] in dictData.get('alert_data')]
         alert = Alert(
             alert_type = dictData.get('alert_type').lower(),
             alert_data = alert_data,

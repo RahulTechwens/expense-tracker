@@ -34,9 +34,5 @@ class AlertController:
                     {"message": "Expense recorded successfully", "data": result}
                 )
             )
-            # return JSONResponse(
-            #     status_code=200,
-            #     content={"message": "Expense recorded successfully", "data": result},
-            # )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
