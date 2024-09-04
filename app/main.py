@@ -1,10 +1,12 @@
+# import os
+# os.environ["PYTHONDONTWRITEBYTECODE"] = 1
+
 from fastapi import FastAPI # type: ignore
 from fastapi.staticfiles import StaticFiles # type: ignore
 from app.routes.expense_routes import router as expense_router
 from app.routes.alert_routes import router as alert_router
-
 import uvicorn # type: ignore
-from app.core.config import settings  # Import the settings
+from app.core.config import settings
 
 app = FastAPI()
 
