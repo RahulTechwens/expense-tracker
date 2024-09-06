@@ -23,6 +23,14 @@ async def filter_sms(
 ):
    return await ExpenseController.cat_filter(cat, start_date, end_date)
 
+
 @router.post("/cat/add")
 async def add_cat( request: Request):
     return await ExpenseController.create_cat(request)
+
+
+@router.post("/expense-gpt")
+async def expense_gpt_message(request: Request):
+    return await ExpenseController.expense_gpt(request)
+
+

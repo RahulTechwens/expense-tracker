@@ -28,3 +28,8 @@ class Cat(Document):
     }
     
     
+class Message(Document):
+    msg = StringField(required=True)
+
+    
+    

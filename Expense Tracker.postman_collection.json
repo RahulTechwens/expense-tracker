@@ -7,10 +7,22 @@
 	},
 	"item": [
 		{
-			"name": "Fetch All SMS Data From DB",
+			"name": "Fetch & Add Data",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						""
+					]
+				}
 			},
 			"response": [
 				{
@@ -62,7 +74,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/api/expense/?cat=clothing",
+							"raw": "http://localhost:8000/api/expense/?cat=health",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -76,7 +88,7 @@
 							"query": [
 								{
 									"key": "cat",
-									"value": "clothing"
+									"value": "health"
 								}
 							]
 						}
@@ -87,7 +99,7 @@
 					"header": [
 						{
 							"key": "date",
-							"value": "Fri, 30 Aug 2024 10:26:09 GMT"
+							"value": "Fri, 06 Sep 2024 06:17:52 GMT"
 						},
 						{
 							"key": "server",
@@ -95,7 +107,7 @@
 						},
 						{
 							"key": "content-length",
-							"value": "599"
+							"value": "589"
 						},
 						{
 							"key": "content-type",
@@ -103,7 +115,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"Message\": \"Data Fetched Successfully\",\n    \"Entered Categories\": [\n        \"clothing\"\n    ],\n    \"Filtered Data\": [\n        {\n            \"_id\": \"66d1514a4a43273e47a141aa\",\n            \"id\": 4,\n            \"cat\": \"clothing\",\n            \"merchant\": \"Myntra\",\n            \"acct\": \"XXXX1234\",\n            \"bank\": \"SBI\",\n            \"date\": \"2024-08-07\",\n            \"body\": \"Clothing purchase from Myntra\",\n            \"amount\": 800,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141b2\",\n            \"id\": 12,\n            \"cat\": \"clothing\",\n            \"merchant\": \"Zara\",\n            \"acct\": \"XXXX8901\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-14\",\n            \"body\": \"Clothing purchase from Zara\",\n            \"amount\": 2200,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        }\n    ]\n}"
+					"body": "{\n    \"Message\": \"Data Fetched Successfully\",\n    \"Entered Categories\": [\n        \"health\"\n    ],\n    \"Filtered Data\": [\n        {\n            \"_id\": \"66d7077590f2e2e5a507be97\",\n            \"cat\": \"health\",\n            \"merchant\": \"MedPlus\",\n            \"acct\": \"XXXX2345\",\n            \"bank\": \"HDFC\",\n            \"date\": \"2024-09-01T19:45:21\",\n            \"body\": \"Medicines from MedPlus\",\n            \"amount\": 0,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": true,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d7077590f2e2e5a507bea0\",\n            \"cat\": \"health\",\n            \"merchant\": \"HealthKart\",\n            \"acct\": \"XXXX4567\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-09-02T15:29:58\",\n            \"body\": \"Vitamins from HealthKart\",\n            \"amount\": 550,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": true,\n            \"keywords\": [],\n            \"vector\": []\n        }\n    ]\n}"
 				},
 				{
 					"name": "Fetch Filtered Data By Multiple Category",
@@ -111,7 +123,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/api/expense/?cat=clothing,food",
+							"raw": "http://localhost:8000/api/expense/?cat=shopping,food",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -125,7 +137,7 @@
 							"query": [
 								{
 									"key": "cat",
-									"value": "clothing,food"
+									"value": "shopping,food"
 								}
 							]
 						}
@@ -136,7 +148,7 @@
 					"header": [
 						{
 							"key": "date",
-							"value": "Fri, 30 Aug 2024 10:26:35 GMT"
+							"value": "Fri, 06 Sep 2024 06:16:58 GMT"
 						},
 						{
 							"key": "server",
@@ -144,7 +156,7 @@
 						},
 						{
 							"key": "content-length",
-							"value": "1598"
+							"value": "862"
 						},
 						{
 							"key": "content-type",
@@ -152,10 +164,10 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"Message\": \"Data Fetched Successfully\",\n    \"Entered Categories\": [\n        \"clothing\",\n        \"food\"\n    ],\n    \"Filtered Data\": [\n        {\n            \"_id\": \"66d1514a4a43273e47a141a7\",\n            \"id\": 1,\n            \"cat\": \"food\",\n            \"merchant\": \"Swiggy\",\n            \"acct\": \"XXXX4567\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-01\",\n            \"body\": \"Food delivery from Swiggy\",\n            \"amount\": 100,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141aa\",\n            \"id\": 4,\n            \"cat\": \"clothing\",\n            \"merchant\": \"Myntra\",\n            \"acct\": \"XXXX1234\",\n            \"bank\": \"SBI\",\n            \"date\": \"2024-08-07\",\n            \"body\": \"Clothing purchase from Myntra\",\n            \"amount\": 800,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141ab\",\n            \"id\": 5,\n            \"cat\": \"food\",\n            \"merchant\": \"Zomato\",\n            \"acct\": \"XXXX2345\",\n            \"bank\": \"Axis\",\n            \"date\": \"2024-08-15\",\n            \"body\": \"Food delivery from Zomato\",\n            \"amount\": 250,\n            \"type\": \"CREDIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141b1\",\n            \"id\": 11,\n            \"cat\": \"food\",\n            \"merchant\": \"Domino's Pizza\",\n            \"acct\": \"XXXX7890\",\n            \"bank\": \"HDFC\",\n            \"date\": \"2024-08-08\",\n            \"body\": \"Pizza order from Domino's\",\n            \"amount\": 350,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141b2\",\n            \"id\": 12,\n            \"cat\": \"clothing\",\n            \"merchant\": \"Zara\",\n            \"acct\": \"XXXX8901\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-14\",\n            \"body\": \"Clothing purchase from Zara\",\n            \"amount\": 2200,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141b7\",\n            \"id\": 17,\n            \"cat\": \"food\",\n            \"merchant\": \"KFC\",\n            \"acct\": \"XXXX2345\",\n            \"bank\": \"HDFC\",\n            \"date\": \"2024-08-30\",\n            \"body\": \"Food order from KFC\",\n            \"amount\": 400,\n            \"type\": \"CREDIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        }\n    ]\n}"
+					"body": "{\n    \"Message\": \"Data Fetched Successfully\",\n    \"Entered Categories\": [\n        \"shopping\",\n        \"food\"\n    ],\n    \"Filtered Data\": [\n        {\n            \"_id\": \"66d7077590f2e2e5a507be94\",\n            \"cat\": \"shopping\",\n            \"merchant\": \"H&M\",\n            \"acct\": \"XXXX1234\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-09-01T14:50:11\",\n            \"body\": \"shopping purchase from H&M\",\n            \"amount\": 1200,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d7077590f2e2e5a507be9d\",\n            \"cat\": \"shopping\",\n            \"merchant\": \"Levi's\",\n            \"acct\": \"XXXX2345\",\n            \"bank\": \"HDFC\",\n            \"date\": \"2024-09-02T11:00:23\",\n            \"body\": \"shopping purchase from Levi's\",\n            \"amount\": 1500,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d7077590f2e2e5a507bea6\",\n            \"cat\": \"shopping\",\n            \"merchant\": \"Zara\",\n            \"acct\": \"XXXX5678\",\n            \"bank\": \"SBI\",\n            \"date\": \"2024-09-02T22:45:18\",\n            \"body\": \"shopping purchase from Zara\",\n            \"amount\": 1800,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        }\n    ]\n}"
 				},
 				{
-					"name": "Fetch Filtered Data Between Date Range",
+					"name": "Fetch Filtered Data of a Day and it's Previous Day",
 					"originalRequest": {
 						"method": "GET",
 						"header": [],
@@ -208,55 +220,6 @@
 					"body": "{\n    \"Message\": \"Data Fetched Successfully\",\n    \"Entered Start Date\": \"2024-08-03\",\n    \"Entered End Date\": \"2024-08-04\",\n    \"Filtered Data\": [\n        {\n            \"_id\": \"66d1514a4a43273e47a141a8\",\n            \"id\": 2,\n            \"cat\": \"grocery\",\n            \"merchant\": \"JioMart\",\n            \"acct\": null,\n            \"bank\": null,\n            \"date\": \"2024-08-03\",\n            \"body\": \"Grocery purchase from JioMart\",\n            \"amount\": 456,\n            \"type\": \"CREDIT\",\n            \"method\": \"CASH\",\n            \"manual\": true,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141ad\",\n            \"id\": 7,\n            \"cat\": \"travel\",\n            \"merchant\": \"Uber\",\n            \"acct\": \"XXXX3456\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-04\",\n            \"body\": \"Cab ride with Uber\",\n            \"amount\": 150,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141ba\",\n            \"id\": 20,\n            \"cat\": \"travel\",\n            \"merchant\": \"MakeMyTrip\",\n            \"acct\": \"XXXX5678\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-04\",\n            \"body\": \"Hotel booking with MakeMyTrip\",\n            \"amount\": 3000,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        }\n    ]\n}"
 				},
 				{
-					"name": "Fetch Filtered Data By A Single Date",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8000/api/expense/?date=2024-08-04",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"expense",
-								""
-							],
-							"query": [
-								{
-									"key": "date",
-									"value": "2024-08-04"
-								}
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "date",
-							"value": "Fri, 30 Aug 2024 10:30:11 GMT"
-						},
-						{
-							"key": "server",
-							"value": "uvicorn"
-						},
-						{
-							"key": "content-length",
-							"value": "586"
-						},
-						{
-							"key": "content-type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"Message\": \"Data Fetched Successfully\",\n    \"Entered Date\": \"2024-08-04\",\n    \"Filtered Data\": [\n        {\n            \"_id\": \"66d1514a4a43273e47a141ad\",\n            \"id\": 7,\n            \"cat\": \"travel\",\n            \"merchant\": \"Uber\",\n            \"acct\": \"XXXX3456\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-04\",\n            \"body\": \"Cab ride with Uber\",\n            \"amount\": 150,\n            \"type\": \"CREDIT\",\n            \"method\": \"UPI\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        },\n        {\n            \"_id\": \"66d1514a4a43273e47a141ba\",\n            \"id\": 20,\n            \"cat\": \"travel\",\n            \"merchant\": \"MakeMyTrip\",\n            \"acct\": \"XXXX5678\",\n            \"bank\": \"ICICI\",\n            \"date\": \"2024-08-04\",\n            \"body\": \"Hotel booking with MakeMyTrip\",\n            \"amount\": 3000,\n            \"type\": \"DEBIT\",\n            \"method\": \"CARD\",\n            \"manual\": false,\n            \"keywords\": [],\n            \"vector\": []\n        }\n    ]\n}"
-				},
-				{
 					"name": "Add Expense Data in DB",
 					"originalRequest": {
 						"method": "POST",
@@ -307,6 +270,109 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"message\": \"Expense recorded successfully\",\n    \"data\": {\n        \"status\": \"success\",\n        \"result\": {\n            \"inserted_id\": \"66d1b37e5a9e5dd0a298295d\"\n        }\n    }\n}"
+				},
+				{
+					"name": "Add New Category in DB",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"icon_id\": 28,\r\n  \"label\": \"Demo Cat\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/cat/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cat",
+								"add"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 06 Sep 2024 06:51:28 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "114"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Expense recorded successfully\",\n    \"data\": {\n        \"status\": \"success\",\n        \"result\": {\n            \"icon_id\": 28,\n            \"label\": \"Demo Cat\"\n        }\n    }\n}"
+				},
+				{
+					"name": "Post Message for Expense-GPT",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"msg\":\"Hi, This is Expense-Generative Pre-Trained Transformer. How're you doing?\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/expense-gpt",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"expense-gpt"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 06 Sep 2024 06:55:10 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "165"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Expense recorded successfully\",\n    \"data\": {\n        \"status\": \"success\",\n        \"Message\": {\n            \"msg\": \"Hi, This is Expense-Generative Pre-Trained Transformer. How're you doing?\"\n        }\n    }\n}"
 				}
 			]
 		}

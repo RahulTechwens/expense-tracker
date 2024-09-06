@@ -28,6 +28,7 @@ class ExpenseController:
             raise HTTPException(status_code=500, detail=str(e))    
 
     async def cat_filter(cat, start_date, end_date):
+        
         try:
             cat = cat.split(',') if cat else []
             start_date = start_date or None
@@ -37,4 +38,17 @@ class ExpenseController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    
+        
+        
+        
+    async def expense_gpt(request: Request):
+        try:
+            request_data = await request.json()
+            result = await ExpenseService.expense_gpt_msg(request_data)
+            response_data = {"status": "success", "Message": request_data}
+            return JSONResponse(
+                status_code=200,
+                content={"message": "Expense recorded successfully", "data": response_data},
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
