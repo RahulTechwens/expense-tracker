@@ -2,6 +2,12 @@ from fastapi.responses import JSONResponse  # type: ignore
 from fastapi import HTTPException # type: ignore
 from ..services.alert_service import AlertService
 from ..helper.response_helper import ResponseServiceHelper 
+from app.db.connection import mongodb
+        
+from fastapi import HTTPException
+
+from bson import ObjectId
+from app.models.alert_model import Alert
 
 class AlertController:
     async def set_alert(request):
@@ -36,3 +42,13 @@ class AlertController:
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+        
+        
+
+
+    async def toggle_status(alert_id: str, status:bool):
+        try:
+            response = await AlertService.toggle_alert_status(alert_id, status)
+            return response
+        except HTTPException as e:
+            raise e

@@ -5,6 +5,17 @@ from typing import List, Dict
 from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q # type: ignore
 from bson import ObjectId # type: ignore
+from fastapi import FastAPI, HTTPException, Query
+from fastapi import HTTPException
+from bson import ObjectId
+from motor.motor_asyncio import AsyncIOMotorClient
+from app.core.config import settings
+from app.db.connection import MongoDB
+
+
+
+
+
 
 class AlertService:
     
@@ -70,3 +81,19 @@ class AlertService:
             result_alerts.append(alert_dict)
         
         return result_alerts
+
+
+
+    async def toggle_alert_status(alert_id: str, status: bool):
+        try:
+            alert = Alert.objects(id=alert_id).first()
+            if not alert:
+                return {"message": "Alert not found"}
+
+            alert.status = status
+
+            alert.save()
+            return {"alert id" : alert_id,
+                "message": f"Alert status updated to {alert.status}"}
+        except Exception as e:
+            return {"message": f"Error updating alert: {e}"}
