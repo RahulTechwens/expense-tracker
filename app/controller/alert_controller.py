@@ -2,10 +2,6 @@ from fastapi.responses import JSONResponse  # type: ignore
 from fastapi import HTTPException # type: ignore
 from ..services.alert_service import AlertService
 from ..helper.response_helper import ResponseServiceHelper 
-from app.db.connection import mongodb
-        
-from fastapi import HTTPException
-
 from bson import ObjectId
 from app.models.alert_model import Alert
 
