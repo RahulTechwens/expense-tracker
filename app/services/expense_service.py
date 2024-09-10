@@ -174,4 +174,21 @@ class ExpenseService:
             msg=expense_request.get("msg"),
         )
         return {message}
+    
+    @staticmethod
+    async def show_all_cat():
+        data = Cat.objects()
+        result = []
+        for item in data:
+            item_dict = item.to_mongo().to_dict()
+            item_dict["_id"] = str(item_dict["_id"])
+            result.append(item_dict)
 
+        return JSONResponse(
+            status_code=200,
+            content={
+                "Message": "All Category Fetched Successfully",
+                "Filtered Data": result,
+            },
+        )
+        

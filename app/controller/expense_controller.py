@@ -39,7 +39,13 @@ class ExpenseController:
             raise HTTPException(status_code=500, detail=str(e))
         
         
-        
+    async def all_cat():
+        try:
+            result = await ExpenseService.show_all_cat()
+            return result
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+            
         
     async def expense_gpt(request: Request):
         try:
@@ -48,7 +54,7 @@ class ExpenseController:
             response_data = {"status": "success", "Message": request_data}
             return JSONResponse(
                 status_code=200,
-                content={"message": "Expense recorded successfully", "data": response_data},
+                content={"message": "Message only", "data": response_data},
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
