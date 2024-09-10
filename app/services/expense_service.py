@@ -83,8 +83,8 @@ class ExpenseService:
                 status_code=200,
                 content={
                     "Message": "Data Fetched Successfully",
-                    "Entered Categories": categories,
-                    "Filtered Data": result,
+                    "Entered_Categories": categories,
+                    "Filtered_Data": result,
                 },
             )
         # http://127.0.0.1:8000/api/expense?start-date=2024-09-02T00:00:00&end-date=2024-09-02T23:59:59
@@ -164,7 +164,7 @@ class ExpenseService:
                 status_code=200,
                 content={
                     "Message": "All Data Fetched Successfully",
-                    "Filtered Data": result,
+                    "Filtered_Data": result,
                 },
             )
         
@@ -188,7 +188,7 @@ class ExpenseService:
             status_code=200,
             content={
                 "Message": "All Category Fetched Successfully",
-                "Filtered Data": result,
+                "Filtered_Data": result,
             },
         )
         
