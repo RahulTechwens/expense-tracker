@@ -193,3 +193,19 @@ class ExpenseService:
             result.append(item_dict)
 
         return result
+    
+    
+    @staticmethod
+    async def rename_custom_cat(rename_request):
+        id = rename_request.get('id')
+        new_label = rename_request.get('new_label')
+
+        # Find the object by `id` in the `Cat` collection
+        cat = CustomCat.objects(id=id).first()
+
+        # If the cat object is found, you can update or return it
+        if cat:
+            # You can update the label here if needed
+            cat.label = new_label
+            cat.save()
+        return new_label

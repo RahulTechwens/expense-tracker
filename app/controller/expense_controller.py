@@ -71,3 +71,13 @@ class ExpenseController:
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    async def rename_custom_cat(request: Request):
+        request_data = await request.json()
+        result = await ExpenseService.rename_custom_cat(request_data)
+
+        return JSONResponse(
+            status_code=200,
+            content = {"message": "The custom category renamed to " + result}
+
+        )
