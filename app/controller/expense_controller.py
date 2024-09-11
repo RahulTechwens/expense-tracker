@@ -38,7 +38,7 @@ class ExpenseController:
             start_date = start_date or None
             end_date = end_date or None
             result = await ExpenseService.filter_sms_category(cat, start_date, end_date)
-            
+
             return JSONResponse(
                 status_code=200,
                 content=result,
@@ -50,7 +50,13 @@ class ExpenseController:
     async def all_cat():
         try:
             result = await ExpenseService.show_all_cat()
-            return result
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "Message": "All Category Fetched Successfully",
+                    "data": result,
+                },
+            )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
