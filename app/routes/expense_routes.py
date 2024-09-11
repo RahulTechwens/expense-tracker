@@ -28,6 +28,10 @@ async def filter_sms(
 async def add_cat( request: Request):
     return await ExpenseController.create_custom_cat(request)
 
+@router.post("/rename-custom-cat/add")
+async def add_cat( request: Request):
+    return await ExpenseController.create_custom_cat(request)
+
 @router.get("/cat")
 async def all_cat():
     return await ExpenseController.all_cat()
@@ -35,5 +39,6 @@ async def all_cat():
 @router.post("/expense-gpt")
 async def expense_gpt_message(request: Request):
     return await ExpenseController.expense_gpt(request)
+
 
 
