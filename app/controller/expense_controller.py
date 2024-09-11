@@ -15,14 +15,14 @@ class ExpenseController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     
-    async def create_cat(request: Request):
+    async def create_custom_cat(request: Request):
         try:
             request_data = await request.json()
-            result = await ExpenseService.insert_cat(request_data)
+            result = await ExpenseService.insert_custom_cat(request_data)
             response_data = {"status": "success", "result":request_data}
             return JSONResponse(
                 status_code=200,
-                content={"message": "Expense recorded successfully", "data": response_data}
+                content={"message": "Expense recorded successfully", "data": result}
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))    

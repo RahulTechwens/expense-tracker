@@ -1,11 +1,13 @@
 from app.db.connection import mongodb
-from app.models.expense_model import Expense, Cat, Message
+from app.models.expense_model import Expense, Cat, Message, CustomCat
 from typing import List
 from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q # type: ignore
+from mongoengine import ValidationError
 from fastapi.responses import JSONResponse # type: ignore
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
+
 
 class ExpenseService:
 
@@ -40,27 +42,63 @@ class ExpenseService:
             return JSONResponse(status_code=500, content={"error": str(e)})
 
     @staticmethod
-    async def insert_cat(expense_request):
+    async def insert_custom_cat(expense_request):
+        
+        
+        
+        from mongoengine import DoesNotExist
+
+        parent_genre_id = expense_request.get('parent_genre_id')
+
         try:
-            def save_cat():
-                cat = Cat(
-                    icon_id=expense_request.get('icon_id'),
-                    label=expense_request.get('label'),
-                )
-                cat.save()
-                return str(cat.id)
+            is_parent = Cat.objects.get(id=parent_genre_id)
+            label = expense_request.get('label')
+            existing_cat = Cat.objects(label=label).first()
+            if existing_cat:
+            # If label exists, raise a validation error
+                raise ValidationError(f"The label '{label}' already exists in the Cat collection.")
+            else:
+                try:
+                    def save_cat():
+                        cat = CustomCat(
+                            icon_id=expense_request.get('icon_id'),
+                            label=expense_request.get('label'),
+                            parent_genre_id=expense_request.get('parent_genre_id'),
+                        )
+                        cat.save()
+                        return str(cat.id)
 
-            loop = asyncio.get_event_loop()
-            with ThreadPoolExecutor() as pool:
-                inserted_id = await loop.run_in_executor(pool, save_cat)
+                    loop = asyncio.get_event_loop()
+                    with ThreadPoolExecutor() as pool:
+                        inserted_id = await loop.run_in_executor(pool, save_cat)
+                    
+                    return {"inserted_id": inserted_id}
+
+                except Exception as e:
+                    return JSONResponse(status_code=500, content={"error": str(e)})
             
-            return {"inserted_id": inserted_id}
+            
+        except DoesNotExist:
+            raise ValueError(f"Parent category with id '{parent_genre_id}' does not exist.")
+        
 
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
+        
+
+
+
+
+
 
     @staticmethod
-    async def filter_sms_category(categories: List[str], start_date, end_date):
+    async def filter_sms_category(category_ids: List[str], start_date, end_date):
+        #return [category_ids]
+            # Fetch corresponding labels from the Cat collection
+        cats = Cat.objects(id__in=category_ids).only('label')
+        cat_dict = {str(cat.id): cat.label for cat in cats}
+
+        # Prepare a list of labels based on the category_ids
+        categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]        
+    
         query = Q()
 
         if categories:
@@ -83,7 +121,7 @@ class ExpenseService:
                 status_code=200,
                 content={
                     "Message": "Data Fetched Successfully",
-                    "Entered_Categories": categories,
+                    "entered_categories": categories,
                     "Filtered_Data": result,
                 },
             )

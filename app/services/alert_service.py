@@ -73,14 +73,30 @@ class AlertService:
         return len(result_categories)
 
     async def all_alerts():
-        alerts = Alert.objects()
+        alerts = Alert.objects.aggregate([
+            {
+                "$lookup": {
+                    "from": "categories",  # Collection name for categories
+                    "localField": "cat_ids",  # Field in Alert referencing categories
+                    "foreignField": "icon_id",  # Field in Cat (category model) referencing ids
+                    "as": "categories"  # Result will be stored in this field
+                }
+            }
+        ])
+
         result_alerts = []
         for alert in alerts:
-            alert_dict = alert.to_mongo().to_dict()
-            alert_dict["_id"] = str(alert_dict["_id"])
-            result_alerts.append(alert_dict)
-        
+            if "_id" in alert:
+                alert["_id"] = str(alert["_id"])  # Convert ObjectId to string
+            if "categories" in alert:
+                for category in alert["categories"]:
+                    if "_id" in category:
+                        category["_id"] = str(category["_id"])  # Convert ObjectId for category too
+            result_alerts.append(alert)
+
         return result_alerts
+
+
 
 
 

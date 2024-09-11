@@ -19,7 +19,6 @@ async def alerts():
     return await AlertController.get_alerts()
 
 
-
 @router.put("/alerts/{alert_id}/change-status")
 async def toggle_status(
     request: ToggleStatusRequest,
