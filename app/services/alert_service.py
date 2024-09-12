@@ -19,6 +19,7 @@ from app.db.connection import MongoDB
 
 class AlertService:
     
+    
     days = [
         {"0":"Mon"},
         {"1":"TUe"},
@@ -97,19 +98,20 @@ class AlertService:
         return result_alerts
 
 
-
-
-
     async def toggle_alert_status(alert_id: str, status: bool):
         try:
             alert = Alert.objects(id=alert_id).first()
             if not alert:
                 return {"message": "Alert not found"}
-
             alert.status = status
-
             alert.save()
-            return {"alert id" : alert_id,
-                "message": f"Alert status updated to {alert.status}"}
+            return alert._id
         except Exception as e:
             return {"message": f"Error updating alert: {e}"}
+        
+    async def delete_alert(alert_id: list):
+        object_ids = [ObjectId(alert_id) for alert_id in alert_id]
+        alerts = Alert.objects(id__in=object_ids)
+        # print(object_ids)
+        alerts.delete()
+        return True
