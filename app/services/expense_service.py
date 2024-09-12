@@ -1,67 +1,96 @@
 from app.db.connection import mongodb
-from app.models.expense_model import Expense, Cat, Message
+from app.models.expense_model import Expense, Cat, Message, CustomCat
 from typing import List
 from datetime import datetime, timedelta
-from mongoengine.queryset.visitor import Q # type: ignore
-from fastapi.responses import JSONResponse # type: ignore
+from mongoengine.queryset.visitor import Q  # type: ignore
+from mongoengine import ValidationError
+from fastapi.responses import JSONResponse  # type: ignore
 from concurrent.futures import ThreadPoolExecutor
+from mongoengine import DoesNotExist
 import asyncio
+
 
 class ExpenseService:
 
     @staticmethod
     async def insert_expense(expense_request):
-        try:
-            def save_expense():
-                expense = Expense(
-                    cat=expense_request.get('cat'),
-                    merchant=expense_request.get('merchant'),
-                    acct=expense_request.get('acct'),
-                    bank=expense_request.get('bank'),
-                    date=expense_request.get('date'),
-                    body=expense_request.get('body'),
-                    amount=expense_request.get('amount'),
-                    type=expense_request.get('type'),
-                    method=expense_request.get('method'),
-                    manual=expense_request.get('manual'),
-                    keywords=expense_request.get('keywords'),
-                    vector=expense_request.get('vector'),
-                )
-                expense.save()
-                return str(expense.id)
+        def save_expense():
+            expense = Expense(
+                cat=expense_request.get("cat"),
+                merchant=expense_request.get("merchant"),
+                acct=expense_request.get("acct"),
+                bank=expense_request.get("bank"),
+                date=expense_request.get("date"),
+                body=expense_request.get("body"),
+                amount=expense_request.get("amount"),
+                type=expense_request.get("type"),
+                method=expense_request.get("method"),
+                manual=expense_request.get("manual"),
+                keywords=expense_request.get("keywords"),
+                vector=expense_request.get("vector"),
+            )
+            expense.save()
+            return str(expense.id)
 
-            loop = asyncio.get_event_loop()
-            with ThreadPoolExecutor() as pool:
-                inserted_id = await loop.run_in_executor(pool, save_expense)
-            
-            return {"inserted_id": inserted_id}
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as pool:
+            inserted_id = await loop.run_in_executor(pool, save_expense)
 
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
+        return {"inserted_id": inserted_id}
+
 
     @staticmethod
-    async def insert_cat(expense_request):
+    async def insert_custom_cat(expense_request):
+
+        parent_genre_id = expense_request.get("parent_genre_id")
+
         try:
-            def save_cat():
-                cat = Cat(
-                    icon_id=expense_request.get('icon_id'),
-                    label=expense_request.get('label'),
-                )
-                cat.save()
-                return str(cat.id)
+            is_parent = Cat.objects.get(id=parent_genre_id)
 
-            loop = asyncio.get_event_loop()
-            with ThreadPoolExecutor() as pool:
-                inserted_id = await loop.run_in_executor(pool, save_cat)
-            
-            return {"inserted_id": inserted_id}
+            label = expense_request.get("label")
+            existing_cat = Cat.objects(label=label).first()
+            existing_custom_cat = CustomCat.objects(label=label).first()
 
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
+            # If label exists in Predefined cat table or custom cat table, raise a validation error
+            if existing_cat or existing_custom_cat:
+                raise ValidationError(f"The label '{label}' already exists.")
+            else:
+                    def save_cat():
+                        cat = CustomCat(
+                            icon_id=expense_request.get("icon_id"),
+                            label=expense_request.get("label"),
+                            parent_genre_id=expense_request.get("parent_genre_id"),
+                        )
+                        cat.save()
+                        return str(cat.id)
+
+                    loop = asyncio.get_event_loop()
+                    with ThreadPoolExecutor() as pool:
+                        inserted_id = await loop.run_in_executor(pool, save_cat)
+
+                    return {"inserted_id": inserted_id}
+
+        except DoesNotExist:
+            raise ValueError(
+                f"Parent category with id '{parent_genre_id}' does not exist."
+            )
 
     @staticmethod
-    async def filter_sms_category(categories: List[str], start_date, end_date):
+    async def filter_sms_category(category_ids: List[str], start_date, end_date):
+        # return [category_ids]
+        # Fetch corresponding labels from the Cat collection
+        cats = Cat.objects(id__in=category_ids).only("label")
+        cat_dict = {str(cat.id): cat.label for cat in cats}
+        
+        #return cat_dict
+
+        # Prepare a list of labels based on the category_ids
+        categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
+        #return categories
+
         query = Q()
+        result = []
+
 
         if categories:
             query &= Q(cat__in=categories)
@@ -73,20 +102,11 @@ class ExpenseService:
                 return []
 
             # Convert the documents to a list of dictionaries
-            result = []
             for item in data:
                 item_dict = item.to_mongo().to_dict()
                 item_dict["_id"] = str(item_dict["_id"])
                 result.append(item_dict)
-
-            return JSONResponse(
-                status_code=200,
-                content={
-                    "Message": "Data Fetched Successfully",
-                    "Entered Categories": categories,
-                    "Filtered Data": result,
-                },
-            )
+        
         # http://127.0.0.1:8000/api/expense?start-date=2024-09-02T00:00:00&end-date=2024-09-02T23:59:59
         elif start_date and end_date:
 
@@ -101,8 +121,7 @@ class ExpenseService:
             ending_datetime = end_datetime - timedelta(days=1)
             previous_day_end_date = ending_datetime.isoformat()
 
-            # Initialize a list to store the label and amount pairs
-            result = []
+
             total_expense = 0
             previous_total_expense = 0
             # calculate the sum of amounts for each label within the time span
@@ -137,37 +156,25 @@ class ExpenseService:
                     }
                 )
 
-            return JSONResponse(
-                status_code=200,
-                content={
-                    "Message": "Data of The Day and Previous Day Fetched Successfully",
-                    "Data":             [
-                    {
-                        "Current_day": f"{start_date} to {end_date}",
-                        "Current_day_total_expense": total_expense,
-                        "Previous_day": f"{previous_day_start_date} to {previous_day_end_date}",
-                        "Previous_day_total_expense": previous_total_expense,
-                        "Summary": result,
-                    },
-                ],
-                },
-            )
         else:
             data = Expense.objects()
-            result = []
+
             for item in data:
                 item_dict = item.to_mongo().to_dict()
                 item_dict["_id"] = str(item_dict["_id"])
                 result.append(item_dict)
+                
+                
+        #Return result
+        content = (
+            {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            },
+        )
+        return content
 
-            return JSONResponse(
-                status_code=200,
-                content={
-                    "Message": "All Data Fetched Successfully",
-                    "Filtered Data": result,
-                },
-            )
-        
+
     @staticmethod
     async def expense_gpt_msg(expense_request):
         message = Message(
@@ -175,3 +182,30 @@ class ExpenseService:
         )
         return {message}
 
+
+    @staticmethod
+    async def show_all_cat():
+        data = Cat.objects()
+        result = []
+        for item in data:
+            item_dict = item.to_mongo().to_dict()
+            item_dict["_id"] = str(item_dict["_id"])
+            result.append(item_dict)
+
+        return result
+    
+    
+    @staticmethod
+    async def rename_custom_cat(rename_request):
+        id = rename_request.get('id')
+        new_label = rename_request.get('new_label')
+
+        # Find the object by `id` in the `Cat` collection
+        cat = CustomCat.objects(id=id).first()
+
+        # If the cat object is found, you can update or return it
+        if cat:
+            # You can update the label here if needed
+            cat.label = new_label
+            cat.save()
+        return new_label

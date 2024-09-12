@@ -27,6 +27,16 @@ class Cat(Document):
         'collection': 'categories'
     }
     
+
+class CustomCat(Document):
+    icon_id = IntField(required=True)
+    label = StringField(required=True)
+    parent_genre_id = StringField(required=True)
+    meta = {
+        'collection': 'custom_categories'
+    }
+    
+    
     
 class Message(Document):
     msg = StringField(required=True)

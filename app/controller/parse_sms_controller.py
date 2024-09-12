@@ -1,5 +1,5 @@
-from fastapi.responses import JSONResponse
-from fastapi import HTTPException
+from fastapi.responses import JSONResponse # type: ignore
+from fastapi import HTTPException # type: ignore
 import re
 
 class ParseSmsController:

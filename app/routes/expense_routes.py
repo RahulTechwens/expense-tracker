@@ -16,21 +16,29 @@ async def expense_detail( request: Request):
 @router.get("/expense")
 async def filter_sms(
     request: Request,  # Add the request object to access the query string
-    cat: Optional[str] = Query(None),
+    cat_id: Optional[str] = Query(None, alias="cat-id"),
     start_date: Optional[str] = Query(None, alias="start-date"),
     end_date: Optional[str] = Query(None, alias="end-date"),
     #  date: Optional[str] = Query(None)
 ):
-   return await ExpenseController.cat_filter(cat, start_date, end_date)
+    return await ExpenseController.cat_filter(cat_id, start_date, end_date)
 
 
-@router.post("/cat/add")
+@router.post("/custom-cat/add")
 async def add_cat( request: Request):
-    return await ExpenseController.create_cat(request)
+    return await ExpenseController.create_custom_cat(request)
 
+@router.put("/rename-custom-cat")
+async def rename_cat( request: Request):
+    return await ExpenseController.rename_custom_cat(request)
+
+@router.get("/cat")
+async def all_cat():
+    return await ExpenseController.all_cat()
 
 @router.post("/expense-gpt")
 async def expense_gpt_message(request: Request):
     return await ExpenseController.expense_gpt(request)
+
 
 
