@@ -5,7 +5,6 @@ from typing import List, Dict
 from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q # type: ignore
 from bson import ObjectId # type: ignore
-from fastapi import FastAPI, HTTPException, Query
 from fastapi import HTTPException
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -22,7 +21,7 @@ class AlertService:
     
     days = [
         {"0":"Mon"},
-        {"1":"TUe"},
+        {"1":"Tue"},
         {"2":"Wed"},
         {"3":"Thu"},
         {"4":"Fri"},
@@ -46,10 +45,12 @@ class AlertService:
     ]
 
     async def insert_alert(self, dictData):
+        
         if dictData.get('alert_type').lower() == 'daily':
-            alert_data = [day for day in self.days if list(day.values())[0] in dictData.get('alert_data')]
+            alert_data = [day for day in self.days if list(day.keys())[0] in dictData.get('alert_data')]
         elif dictData.get('alert_type').lower() == 'monthly':
-            alert_data = [month for month in self.months if list(self.months.values())[0] in dictData.get('alert_data')]
+            alert_data = [month for month in self.months if list(self.months.keys())[0] in dictData.get('alert_data')]
+        print(alert_data)
         alert = Alert(
             alert_type = dictData.get('alert_type').lower(),
             alert_data = alert_data,
@@ -77,10 +78,10 @@ class AlertService:
         alerts = Alert.objects.aggregate([
             {
                 "$lookup": {
-                    "from": "categories",  # Collection name for categories
-                    "localField": "cat_ids",  # Field in Alert referencing categories
-                    "foreignField": "icon_id",  # Field in Cat (category model) referencing ids
-                    "as": "categories"  # Result will be stored in this field
+                    "from": "categories",
+                    "localField": "cat_ids",
+                    "foreignField": "icon_id",
+                    "as": "categories"
                 }
             }
         ])
@@ -114,4 +115,22 @@ class AlertService:
         alerts = Alert.objects(id__in=object_ids)
         # print(object_ids)
         alerts.delete()
+        return True
+    
+    async def update_alert(self, alert_id, dictData):
+        alert = Alert.objects(id=alert_id).first()
+        if not alert:
+            return {"error": "Alert not found"}
+        if dictData.get('alert_type').lower() == 'daily':
+            alert.alert_data = [day for day in self.days if list(day.values())[0] in dictData.get('alert_data')]
+        elif dictData.get('alert_type').lower() == 'monthly':
+            alert.alert_data = [month for month in self.months if list(self.months.values())[0] in dictData.get('alert_data')]
+
+        alert.alert_type = dictData.get('alert_type').lower() if dictData.get('alert_type') else alert.alert_type
+        alert.limit = dictData.get('limit') if dictData.get('limit') is not None else alert.limit
+        alert.cat_ids = dictData.get('cat_ids') if dictData.get('cat_ids') else alert.cat_ids
+        alert.status = dictData.get('status') if dictData.get('status') is not None else alert.status
+
+        alert.save()
+
         return True

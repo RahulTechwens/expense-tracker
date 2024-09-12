@@ -1,6 +1,7 @@
 from fastapi.responses import JSONResponse  # type: ignore
 from fastapi import HTTPException, APIRouter, Query, Request  # type: ignore
 from app.services.expense_service import ExpenseService
+from ..helper.response_helper import ResponseServiceHelper 
 
 
 class ExpenseController:
@@ -39,9 +40,9 @@ class ExpenseController:
             end_date = end_date or None
             result = await ExpenseService.filter_sms_category(cat, start_date, end_date)
 
-            return JSONResponse(
-                status_code=200,
-                content=result,
+            return ResponseServiceHelper.success_helper(
+                200,
+                result
             )
 
         except Exception as e:
