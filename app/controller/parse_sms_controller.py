@@ -47,9 +47,7 @@ class ParseSmsController:
     def get_parsed_sms(parsed_bank_name: list, message: str):
         if any(bank in parsed_bank_name for bank in ['Team IDFC FIRST Bank', 'ICICI Bank']):
             regex_for_sms_parsing = r'(?:Acct|A\/c|Account|A\/C|A\/C|a\/c|a\/C)[*\s]*(\w+)\s*(?:is|has been)?\s*(credited|debited|CREDITED|DEBITED)\s*(?:with)?\s*(?:INR|Rs\.?)\s*([\d,]+\.\d{2})(?:.*?(?:Team|UPI:.*?-))?\s*([\w\s]+(?:Bank|BANK|bank))'
-            
             parsed_msg = re.search(regex_for_sms_parsing, message, re.IGNORECASE)
-            
             if parsed_msg:
                 return dict(
                     account_number=parsed_msg.group(1),
