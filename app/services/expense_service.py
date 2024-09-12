@@ -76,7 +76,7 @@ class ExpenseService:
             )
 
     @staticmethod
-    async def filter_sms_category(category_ids: List[str], start_date, end_date):
+    async def filter_sms_category(category_ids: List[str], start_date, end_date, group_by):
         # return [category_ids]
         # Fetch corresponding labels from the Cat collection
         cats = Cat.objects(id__in=category_ids).only("label")
@@ -155,7 +155,71 @@ class ExpenseService:
                         "previous_amount": previous_total_amount,
                     }
                 )
+        elif group_by:
+            if group_by == "all":
+                data = Expense.objects()
 
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+                    result.append(item_dict)
+
+            elif group_by == "category":
+                # Initialize the result dictionary
+                result = {}
+
+                # Fetch all expense data
+                data = Expense.objects()
+
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+
+                    # Get the category of the item
+                    category = item_dict.get("cat", "Uncategorized")
+
+                    # Initialize the list for the category if it does not exist
+                    if category not in result:
+                        result[category] = []
+
+                    # Append the item to the appropriate category
+                    result[category].append(item_dict)
+                    
+            elif group_by == "merchant":
+                # Initialize the result dictionary
+                result = {}
+
+                # Fetch all expense data
+                data = Expense.objects()
+
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+
+                    # Get the merchant of the item
+                    merchant = item_dict.get("merchant", "Unknown Merchant")
+
+                    # Initialize the list for the merchant if it does not exist
+                    if merchant not in result:
+                        result[merchant] = []
+
+                    # Append the item to the appropriate merchant group
+                    result[merchant].append(item_dict)
+                
+        
+            #Return result
+            content = (
+                {
+                    "message": "All Data Fetched Successfully",
+                    "data": result,
+                },
+            )
+            return content
+
+
+            
+            
+            
         else:
             data = Expense.objects()
 

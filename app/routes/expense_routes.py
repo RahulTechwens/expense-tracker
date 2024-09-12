@@ -16,12 +16,14 @@ async def expense_detail( request: Request):
 @router.get("/expense")
 async def filter_sms(
     request: Request,  # Add the request object to access the query string
-    cat_id: Optional[str] = Query(None, alias="cat-id"),
-    start_date: Optional[str] = Query(None, alias="start-date"),
-    end_date: Optional[str] = Query(None, alias="end-date"),
+    cat_id: Optional[str] = Query(None, alias="cat-_id"),
+    start_date: Optional[str] = Query(None, alias="start_date"),
+    end_date: Optional[str] = Query(None, alias="end_date"),
+    group_by: Optional[str] = Query(None, alias="group_by"),
+    
     #  date: Optional[str] = Query(None)
 ):
-    return await ExpenseController.cat_filter(cat_id, start_date, end_date)
+    return await ExpenseController.cat_filter(cat_id, start_date, end_date, group_by)
 
 
 @router.post("/custom-cat/add")
