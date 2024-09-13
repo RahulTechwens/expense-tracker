@@ -5,4 +5,6 @@ if __name__ == "__main__":
     # Prevent Python from generating .pyc files
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
     
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8004, reload=True)
+    # Use port assigned by Render.com
+    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if not set
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)

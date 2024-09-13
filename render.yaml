@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: fastapi-app
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: "python run.py"
+    envVars:
+      - key: MONGO_URL
+        value: "mongodb+srv://nelaykarmakar:0u7rxkmMOxmXJFjj@expensetracker.i0cqo.mongodb.net/"

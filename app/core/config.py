@@ -1,10 +1,15 @@
 import os
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv
+
+# Load environment variables from .env file, if it exists
 load_dotenv()
 
 class Settings:
-    HOST = os.getenv("HOST", "127.0.0.1")
-    PORT = int(os.getenv("PORT", "8004"))
-    UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/upload")
-    MONGO_URL = os.getenv("MONGO_URL", 'mongodb+srv://nelaykarmakar:0u7rxkmMOxmXJFjj@expensetracker.i0cqo.mongodb.net/')
+    HOST: str = os.getenv("HOST", "0.0.0.0")  # Default to 0.0.0.0 for hosting
+    PORT: int = int(os.getenv("PORT", "8000"))  # Default to 8000 for production
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "/upload")
+    
+    # Sensitive information should be stored in environment variables (not hardcoded)
+    MONGO_URL: str = os.getenv("MONGO_URL", "mongodb://localhost:27017/mydb")  # Set a default for local testing
+
 settings = Settings()
