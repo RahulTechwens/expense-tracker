@@ -23,8 +23,8 @@ class ExpenseService:
                 date=expense_request.get("date"),
                 body=expense_request.get("body"),
                 amount=expense_request.get("amount"),
-                type=expense_request.get("type"),
-                method=expense_request.get("method"),
+                type=expense_request.get("type"), # Debit | Credit
+                method=expense_request.get("method"), #  default Cash, UPI, Bank Transfer
                 manual=expense_request.get("manual"),
                 keywords=expense_request.get("keywords"),
                 vector=expense_request.get("vector"),
