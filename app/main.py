@@ -20,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],  # Update this to restrict allowed headers
 )
 
+print("main")
 # app.mount("/upload", StaticFiles(directory=settings.UPLOAD_DIR), name="upload")
 
 app.include_router(expense_router, prefix="/api", tags=["Expenses"])

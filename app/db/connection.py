@@ -7,6 +7,7 @@ class MongoDB:
         connect(db_name, host=uri)
 
     async def get_database(self):
+        print(self.db)
         return self.db
 
 mongodb = MongoDB(settings.MONGO_URL, "expenses")
