@@ -96,6 +96,7 @@ class AlertService:
                         category["_id"] = str(category["_id"])  # Convert ObjectId for category too
             result_alerts.append(alert)
 
+        print(result_alerts)
         return result_alerts
 
 
