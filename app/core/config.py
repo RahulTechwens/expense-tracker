@@ -10,6 +10,6 @@ class Settings:
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "/upload")
     
     # Sensitive information should be stored in environment variables (not hardcoded)
-    MONGO_URL: str = os.getenv("MONGO_URL", "mongodb://localhost:27017/mydb")  # Set a default for local testing
+    MONGO_URL: str = os.getenv("MONGO_URL", "mongodb+srv://nelaykarmakar:0u7rxkmMOxmXJFjj@expensetracker.i0cqo.mongodb.net/expense")  # Set a default for local testing
 
 settings = Settings()
