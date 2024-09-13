@@ -7,7 +7,7 @@ router = APIRouter()
 
 @router.get("/")
 async def read_root():
-    return {"Welcome message": "Welcome to the Expense Tracker API"}
+    return {"Welcome message": "Welcome to the Expense Tracker API development server"}
 
 @router.post("/expense/add")
 async def expense_detail( request: Request):
