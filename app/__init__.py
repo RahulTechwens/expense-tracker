@@ -6,6 +6,7 @@ app.include_router(expense_router)
 @app.on_event("startup")
 async def startup_db_client():
     await mongodb.get_database()
+    print(await mongodb.get_database())
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
