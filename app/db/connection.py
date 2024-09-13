@@ -11,4 +11,4 @@ class MongoDB:
         print(self.db)
         return self.db
 
-mongodb = MongoDB("expenses", settings.MONGO_URL)
+mongodb = MongoDB(settings.MONGO_URL, "expenses")
