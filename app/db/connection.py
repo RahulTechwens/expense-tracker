@@ -5,6 +5,7 @@ class MongoDB:
     def __init__(self, uri: str, db_name: str):
     # Define the default connection using mongoengine
         connect(db_name, host=uri)
+        print(connect(db_name, host=uri))
 
     async def get_database(self):
         print(self.db)
