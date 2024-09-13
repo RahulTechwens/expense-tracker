@@ -83,3 +83,13 @@ class ExpenseController:
             content = {"message": "The custom category renamed to " + result}
 
         )
+        
+    async def time_wise_expense(request: Request):
+        request_data = await request.json()
+        result = await ExpenseService.time_wise_expense(request_data)
+
+
+        return ResponseServiceHelper.success_helper(
+            200,
+            result
+        )

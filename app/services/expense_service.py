@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse  # type: ignore
 from concurrent.futures import ThreadPoolExecutor
 from mongoengine import DoesNotExist
 import asyncio
-
+from collections import defaultdict
 
 class ExpenseService:
 
@@ -23,8 +23,10 @@ class ExpenseService:
                 date=expense_request.get("date"),
                 body=expense_request.get("body"),
                 amount=expense_request.get("amount"),
-                type=expense_request.get("type"), # Debit | Credit
-                method=expense_request.get("method"), #  default Cash, UPI, Bank Transfer
+                type=expense_request.get("type"),  # Debit | Credit
+                method=expense_request.get(
+                    "method"
+                ),  #  default Cash, UPI, Bank Transfer
                 manual=expense_request.get("manual"),
                 keywords=expense_request.get("keywords"),
                 vector=expense_request.get("vector"),
@@ -37,7 +39,6 @@ class ExpenseService:
             inserted_id = await loop.run_in_executor(pool, save_expense)
 
         return {"inserted_id": inserted_id}
-
 
     @staticmethod
     async def insert_custom_cat(expense_request):
@@ -55,20 +56,21 @@ class ExpenseService:
             if existing_cat or existing_custom_cat:
                 raise ValidationError(f"The label '{label}' already exists.")
             else:
-                    def save_cat():
-                        cat = CustomCat(
-                            icon_id=expense_request.get("icon_id"),
-                            label=expense_request.get("label"),
-                            parent_genre_id=expense_request.get("parent_genre_id"),
-                        )
-                        cat.save()
-                        return str(cat.id)
 
-                    loop = asyncio.get_event_loop()
-                    with ThreadPoolExecutor() as pool:
-                        inserted_id = await loop.run_in_executor(pool, save_cat)
+                def save_cat():
+                    cat = CustomCat(
+                        icon_id=expense_request.get("icon_id"),
+                        label=expense_request.get("label"),
+                        parent_genre_id=expense_request.get("parent_genre_id"),
+                    )
+                    cat.save()
+                    return str(cat.id)
 
-                    return {"inserted_id": inserted_id}
+                loop = asyncio.get_event_loop()
+                with ThreadPoolExecutor() as pool:
+                    inserted_id = await loop.run_in_executor(pool, save_cat)
+
+                return {"inserted_id": inserted_id}
 
         except DoesNotExist:
             raise ValueError(
@@ -76,21 +78,22 @@ class ExpenseService:
             )
 
     @staticmethod
-    async def filter_sms_category(category_ids: List[str], start_date, end_date, group_by):
+    async def filter_sms_category(
+        category_ids: List[str], start_date, end_date, group_by
+    ):
         # return [category_ids]
         # Fetch corresponding labels from the Cat collection
         cats = Cat.objects(id__in=category_ids).only("label")
         cat_dict = {str(cat.id): cat.label for cat in cats}
-        
-        #return cat_dict
+
+        # return cat_dict
 
         # Prepare a list of labels based on the category_ids
         categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
-        #return categories
+        # return categories
 
         query = Q()
         result = []
-
 
         if categories:
             query &= Q(cat__in=categories)
@@ -106,7 +109,7 @@ class ExpenseService:
                 item_dict = item.to_mongo().to_dict()
                 item_dict["_id"] = str(item_dict["_id"])
                 result.append(item_dict)
-        
+
         # http://127.0.0.1:8000/api/expense?start-date=2024-09-02T00:00:00&end-date=2024-09-02T23:59:59
         elif start_date and end_date:
 
@@ -120,7 +123,6 @@ class ExpenseService:
             end_datetime = datetime.fromisoformat(end_date)
             ending_datetime = end_datetime - timedelta(days=1)
             previous_day_end_date = ending_datetime.isoformat()
-
 
             total_expense = 0
             previous_total_expense = 0
@@ -158,68 +160,52 @@ class ExpenseService:
         elif group_by:
             if group_by == "all":
                 data = Expense.objects()
-
                 for item in data:
                     item_dict = item.to_mongo().to_dict()
                     item_dict["_id"] = str(item_dict["_id"])
                     result.append(item_dict)
 
             elif group_by == "category":
-                # Initialize the result dictionary
-                result = {}
-
-                # Fetch all expense data
+                result = []
                 data = Expense.objects()
+                categorized_expenses = {}
 
                 for item in data:
                     item_dict = item.to_mongo().to_dict()
                     item_dict["_id"] = str(item_dict["_id"])
+                    category = item_dict.get("cat")
+                    if category not in categorized_expenses:
+                        categorized_expenses[category] = {
+                            "headerName": category,
+                            "innerData": []
+                        }
+                    categorized_expenses[category]["innerData"].append(item_dict)
+                result = list(categorized_expenses.values())
 
-                    # Get the category of the item
-                    category = item_dict.get("cat", "Uncategorized")
-
-                    # Initialize the list for the category if it does not exist
-                    if category not in result:
-                        result[category] = []
-
-                    # Append the item to the appropriate category
-                    result[category].append(item_dict)
-                    
             elif group_by == "merchant":
-                # Initialize the result dictionary
-                result = {}
-
-                # Fetch all expense data
+                result = []
                 data = Expense.objects()
+                grouped_by_merchant = {}
 
                 for item in data:
                     item_dict = item.to_mongo().to_dict()
                     item_dict["_id"] = str(item_dict["_id"])
+                    merchant = item_dict.get("merchant")
+                    if merchant not in grouped_by_merchant:
+                        grouped_by_merchant[merchant] = {
+                            "headerName": merchant,
+                            "innerData": []
+                        }
+                    grouped_by_merchant[merchant]["innerData"].append(item_dict)
+                result = list(grouped_by_merchant.values())
 
-                    # Get the merchant of the item
-                    merchant = item_dict.get("merchant", "Unknown Merchant")
-
-                    # Initialize the list for the merchant if it does not exist
-                    if merchant not in result:
-                        result[merchant] = []
-
-                    # Append the item to the appropriate merchant group
-                    result[merchant].append(item_dict)
-                
-        
-            #Return result
-            content = (
-                {
+            # Return result
+            content ={
                     "message": "All Data Fetched Successfully",
                     "data": result,
-                },
-            )
+                }
             return content
 
-
-            
-            
-            
         else:
             data = Expense.objects()
 
@@ -227,9 +213,8 @@ class ExpenseService:
                 item_dict = item.to_mongo().to_dict()
                 item_dict["_id"] = str(item_dict["_id"])
                 result.append(item_dict)
-                
-                
-        #Return result
+
+        # Return result
         content = (
             {
                 "message": "All Data Fetched Successfully",
@@ -238,14 +223,12 @@ class ExpenseService:
         )
         return content
 
-
     @staticmethod
     async def expense_gpt_msg(expense_request):
         message = Message(
             msg=expense_request.get("msg"),
         )
         return {message}
-
 
     @staticmethod
     async def show_all_cat():
@@ -257,12 +240,11 @@ class ExpenseService:
             result.append(item_dict)
 
         return result
-    
-    
+
     @staticmethod
     async def rename_custom_cat(rename_request):
-        id = rename_request.get('id')
-        new_label = rename_request.get('new_label')
+        id = rename_request.get("id")
+        new_label = rename_request.get("new_label")
 
         # Find the object by `id` in the `Cat` collection
         cat = CustomCat.objects(id=id).first()
@@ -273,3 +255,158 @@ class ExpenseService:
             cat.label = new_label
             cat.save()
         return new_label
+
+
+    #  URL:{{local_url}}/expense/get   BODY:{"time_type":"daily", "index":"2024-09-02", "type":"category"}
+    @staticmethod
+    async def time_wise_expense(request_data):
+        time_type = request_data.get("time_type")
+        index = request_data.get("index")
+        type = request_data.get("type")
+        query = Q()
+        result = []
+
+            
+            
+        
+        if time_type == "daily":
+            date = index
+            query &= Q(date=date)
+            # Fetch the data based on the constructed query
+            data = Expense.objects(query)
+
+            # If no data is found, return an empty list
+            if data.count() == 0:
+                return []
+
+            result = []
+            for item in data:
+                item_dict = item.to_mongo().to_dict()
+                item_dict["_id"] = str(item_dict["_id"])
+                result.append(item_dict)
+                
+            if type == "category":
+                categorized_expenses = {}
+
+                for item in result:
+                    category = item.get("cat")
+                    
+                    if category not in categorized_expenses:
+                        categorized_expenses[category] = {
+                            "headerName": category,
+                            "innerData": []
+                        }
+                    categorized_expenses[category]["innerData"].append(item)
+                
+                result = list(categorized_expenses.values())
+
+                
+            elif type == "merchant":
+                categorized_expenses = {}
+                
+                for item in result:
+                    category = item.get("cat")
+                    merchant = item.get("merchant")
+                    
+                    if merchant not in categorized_expenses:
+                        categorized_expenses[merchant] = {
+                            "headerName": merchant,
+                            "innerData": []
+                        }
+                    categorized_expenses[merchant]["innerData"].append(item)
+                result = list(categorized_expenses.values())    
+            
+
+        elif time_type == "monthly":
+            from datetime import datetime
+
+            # Get the current year
+            current_year = datetime.now().year
+            if index == "01":
+                start_date = f"{current_year}-01-01"
+                end_date = f"{current_year}-01-31"
+            if index == "02":
+                start_date = f"{current_year}-02-01"
+                end_date = f"{current_year}-02-28"
+            if index == "03":
+                start_date = f"{current_year}-03-01"
+                end_date = f"{current_year}-03-30"
+            if index == "04":
+                start_date = f"{current_year}-04-02"
+                end_date = f"{current_year}-04-30"
+            if index == "05":
+                start_date = f"{current_year}-05-02"
+                end_date = f"{current_year}-05-30"
+            if index == "06":
+                start_date = f"{current_year}-06-02"
+                end_date = f"{current_year}-06-30"
+            if index == "07":
+                start_date = f"{current_year}-07-02"
+                end_date = f"{current_year}-07-30"
+            if index == "08":
+                start_date = f"{current_year}-08-02"
+                end_date = f"{current_year}-08-30"
+            if index == "09":
+                start_date = f"{current_year}-09-01"
+                end_date = f"{current_year}-09-30"
+            if index == "10":
+                start_date = f"{current_year}-10-02"
+                end_date = f"{current_year}-10-30"
+        
+        
+        
+        
+        
+            date = index
+            # Assuming 'date' is the field you want to filter by
+            query = Q(date__gte=start_date) & Q(date__lte=end_date)
+
+            # Fetch the data based on the constructed query
+            data = Expense.objects(query)
+
+            # If no data is found, return an empty list
+            if data.count() == 0:
+                return []
+
+            result = []
+            for item in data:
+                item_dict = item.to_mongo().to_dict()
+                item_dict["_id"] = str(item_dict["_id"])
+                result.append(item_dict)
+                
+            if type == "category":
+                categorized_expenses = {}
+
+                for item in result:
+                    category = item.get("cat")
+                    
+                    if category not in categorized_expenses:
+                        categorized_expenses[category] = {
+                            "headerName": category,
+                            "innerData": []
+                        }
+                    categorized_expenses[category]["innerData"].append(item)
+                
+                result = list(categorized_expenses.values())
+
+                
+            elif type == "merchant":
+                categorized_expenses = {}
+                
+                for item in result:
+                    category = item.get("cat")
+                    merchant = item.get("merchant")
+                    
+                    if merchant not in categorized_expenses:
+                        categorized_expenses[merchant] = {
+                            "headerName": merchant,
+                            "innerData": []
+                        }
+                    categorized_expenses[merchant]["innerData"].append(item)
+                result = list(categorized_expenses.values())
+        # Return result
+        content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+        return content
