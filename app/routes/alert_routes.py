@@ -38,3 +38,5 @@ async def delete_alerts(alert_ids:str = Query(...)):
 @router.put("/alert/{alert_id}")
 async def update_alert(alert_id: str, request: Request):
     return await AlertController.update_alert(alert_id, request)
+
+
