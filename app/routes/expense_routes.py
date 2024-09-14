@@ -43,5 +43,10 @@ async def all_cat():
 async def expense_gpt_message(request: Request):
     return await ExpenseController.expense_gpt(request)
 
+@router.post("/expense/get")
+async def time_wise_expense(request: Request):
+    return await ExpenseController.time_wise_expense(request)
+
+
 
 

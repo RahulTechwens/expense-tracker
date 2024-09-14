@@ -45,21 +45,35 @@ class AlertService:
     ]
 
     async def insert_alert(self, dictData):
+        alert_type = dictData.get('alert_type').lower()
+        alert_data_input = dictData.get('alert_data', [])
+
+        # Validate alert_data_input is a list of integers or strings
+        if not isinstance(alert_data_input, list) or not all(isinstance(item, (int, str)) for item in alert_data_input):
+            raise ValueError("Invalid alert_data. Expected a list of integers or strings.")
         
-        if dictData.get('alert_type').lower() == 'daily':
-            alert_data = [day for day in self.days if list(day.keys())[0] in dictData.get('alert_data')]
-        elif dictData.get('alert_type').lower() == 'monthly':
-            alert_data = [month for month in self.months if list(self.months.keys())[0] in dictData.get('alert_data')]
-        print(alert_data)
+        # Transform the input into a list of dictionaries based on alert_type
+        alert_data = []
+        if alert_type == 'daily':
+            # Assuming each item is a day number
+            alert_data = [{"day": day} for day in alert_data_input]
+        elif alert_type == 'monthly':
+            # Assuming each item is a month number or name
+            alert_data = [{"month": month} for month in alert_data_input]
+        else:
+            raise ValueError(f"Unknown alert_type: {alert_type}")
+
+        # Proceed to save the alert
         alert = Alert(
-            alert_type = dictData.get('alert_type').lower(),
-            alert_data = alert_data,
-            limit = dictData.get('limit'),
-            cat_ids = dictData.get('cat_ids'),
-            status = dictData.get('status')
+            alert_type=alert_type,
+            alert_data=alert_data,  # Now a list of dictionaries
+            limit=dictData.get('limit'),
+            cat_ids=dictData.get('cat_ids'),
+            status=dictData.get('status')
         )
         alert.save()
         return {"inserted_id": str(alert.id)}
+
 
     async def check_categories(category_data: List['str']):
         if not category_data:
