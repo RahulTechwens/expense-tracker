@@ -33,26 +33,20 @@ class ExpenseService:
             )
             expense.save()
             return str(expense.id)
-
         loop = asyncio.get_event_loop()
         with ThreadPoolExecutor() as pool:
             inserted_id = await loop.run_in_executor(pool, save_expense)
-
         return {"inserted_id": inserted_id}
 
     @staticmethod
     async def insert_custom_cat(expense_request):
-
         parent_genre_id = expense_request.get("parent_genre_id")
-
         try:
             is_parent = Cat.objects.get(id=parent_genre_id)
-
             label = expense_request.get("label")
             existing_cat = Cat.objects(label=label).first()
             existing_custom_cat = CustomCat.objects(label=label).first()
-
-            # If label exists in Predefined cat table or custom cat table, raise a validation error
+            
             if existing_cat or existing_custom_cat:
                 raise ValidationError(f"The label '{label}' already exists.")
             else:
@@ -81,75 +75,48 @@ class ExpenseService:
     async def filter_sms_category(
         category_ids: List[str], start_date, end_date, group_by
     ):
-        # return [category_ids]
-        # Fetch corresponding labels from the Cat collection
         cats = Cat.objects(id__in=category_ids).only("label")
         cat_dict = {str(cat.id): cat.label for cat in cats}
-
-        # return cat_dict
-
-        # Prepare a list of labels based on the category_ids
         categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
-        # return categories
-
         query = Q()
         result = []
-
         if categories:
             query &= Q(cat__in=categories)
-            # Fetch the data based on the constructed query
             data = Expense.objects(query)
-
-            # If no data is found, return an empty list
             if data.count() == 0:
                 return []
-
-            # Convert the documents to a list of dictionaries
             for item in data:
                 item_dict = item.to_mongo().to_dict()
                 item_dict["_id"] = str(item_dict["_id"])
                 result.append(item_dict)
 
-        # http://127.0.0.1:8000/api/expense?start-date=2024-09-02T00:00:00&end-date=2024-09-02T23:59:59
         elif start_date and end_date:
-
             categories = Cat.objects()
-
-            # prevous day starting and ending
             start_datetime = datetime.fromisoformat(start_date)
             starting_datetime = start_datetime - timedelta(days=1)
             previous_day_start_date = starting_datetime.isoformat()
-
             end_datetime = datetime.fromisoformat(end_date)
             ending_datetime = end_datetime - timedelta(days=1)
             previous_day_end_date = ending_datetime.isoformat()
-
             total_expense = 0
             previous_total_expense = 0
-            # calculate the sum of amounts for each label within the time span
             for category in categories:
                 label = category.label
-
                 expenses = Expense.objects(
                     Q(cat=label) & Q(date__gte=start_date) & Q(date__lte=end_date)
                 )
-
                 total_amount = sum(expense.amount for expense in expenses)
                 total_expense = total_expense + total_amount
-
                 previous_day_expenses = Expense.objects(
                     Q(cat=label)
                     & Q(date__gte=previous_day_start_date)
                     & Q(date__lte=previous_day_end_date)
                 )
-
                 previous_total_amount = sum(
                     previous_day_expense.amount
                     for previous_day_expense in previous_day_expenses
                 )
                 previous_total_expense = previous_total_expense + previous_total_amount
-
-                # Add the label and amount to the result list
                 result.append(
                     {
                         "category": label,
@@ -245,19 +212,12 @@ class ExpenseService:
     async def rename_custom_cat(rename_request):
         id = rename_request.get("id")
         new_label = rename_request.get("new_label")
-
-        # Find the object by `id` in the `Cat` collection
         cat = CustomCat.objects(id=id).first()
-
-        # If the cat object is found, you can update or return it
         if cat:
-            # You can update the label here if needed
             cat.label = new_label
             cat.save()
         return new_label
 
-
-    #  URL:{{local_url}}/expense/get   BODY:{"time_type":"daily", "index":"2024-09-02", "type":"category"}
     @staticmethod
     async def time_wise_expense(request_data):
         time_type = request_data.get("time_type")
@@ -266,16 +226,10 @@ class ExpenseService:
         query = Q()
         result = []
 
-            
-            
-        
         if time_type == "daily":
             date = index
             query &= Q(date=date)
-            # Fetch the data based on the constructed query
             data = Expense.objects(query)
-
-            # If no data is found, return an empty list
             if data.count() == 0:
                 return []
 
@@ -287,7 +241,6 @@ class ExpenseService:
                 
             if type == "category":
                 categorized_expenses = {}
-
                 for item in result:
                     category = item.get("cat")
                     
