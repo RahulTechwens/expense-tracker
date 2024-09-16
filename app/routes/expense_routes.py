@@ -51,4 +51,6 @@ async def time_wise_expense(request: Request):
 async def graph_wise_expense(request: Request):
     return await ExpenseController.graph_wise_expense(request)
 
-
+@router.post("/graph/categories")
+async def graph_wise_categories(request: Request):
+    return await ExpenseController.graph_wise_categories(request)
