@@ -243,10 +243,12 @@ class ExpenseService:
                 categorized_expenses = {}
                 for item in result:
                     category = item.get("cat")
-                    
+                    cat_obj = Cat.objects(Q(label=category)).first()
+                    cat_id = str(cat_obj.id )if cat_obj else None
                     if category not in categorized_expenses:
                         categorized_expenses[category] = {
                             "headerName": category,
+                            "cat_id":cat_id,
                             "innerData": []
                         }
                     categorized_expenses[category]["innerData"].append(item)
@@ -259,10 +261,12 @@ class ExpenseService:
                 for item in result:
                     category = item.get("cat")
                     merchant = item.get("merchant")
-                    
+                    cat_obj = Cat.objects(Q(label=category)).first()
+                    cat_id = str(cat_obj.id )if cat_obj else None
                     if merchant not in categorized_expenses:
                         categorized_expenses[merchant] = {
                             "headerName": merchant,
+                            "cat_id":cat_id,
                             "innerData": []
                         }
                     categorized_expenses[merchant]["innerData"].append(item)
@@ -293,10 +297,12 @@ class ExpenseService:
 
                     for item in result:
                         category = item.get("cat")
-                        
+                        cat_obj = Cat.objects(Q(label=category)).first()
+                        cat_id = str(cat_obj.id )if cat_obj else None
                         if category not in categorized_expenses:
                             categorized_expenses[category] = {
                                 "headerName": category,
+                                "cat_id":cat_id,
                                 "innerData": []
                             }
                         categorized_expenses[category]["innerData"].append(item)
@@ -309,10 +315,12 @@ class ExpenseService:
                     for item in result:
                         category = item.get("cat")
                         merchant = item.get("merchant")
-                        
+                        cat_obj = Cat.objects(Q(label=category)).first()
+                        cat_id = str(cat_obj.id )if cat_obj else None
                         if merchant not in categorized_expenses:
                             categorized_expenses[merchant] = {
                                 "headerName": merchant,
+                                "cat_id":cat_id,
                                 "innerData": []
                             }
                         categorized_expenses[merchant]["innerData"].append(item)
