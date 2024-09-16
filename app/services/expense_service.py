@@ -183,12 +183,10 @@ class ExpenseService:
                 result.append(item_dict)
 
         # Return result
-        content = (
-            {
+        content = {
                 "message": "All Data Fetched Successfully",
                 "data": result,
-            },
-        )
+            }
         return content
 
     @staticmethod
