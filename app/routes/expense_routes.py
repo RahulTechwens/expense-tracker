@@ -47,6 +47,8 @@ async def expense_gpt_message(request: Request):
 async def time_wise_expense(request: Request):
     return await ExpenseController.time_wise_expense(request)
 
-
+@router.post("/graph")
+async def graph_wise_expense(request: Request):
+    return await ExpenseController.graph_wise_expense(request)
 
 

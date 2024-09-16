@@ -93,3 +93,16 @@ class ExpenseController:
             200,
             result
         )
+
+    async def graph_wise_expense(request: Request):
+        try:
+            request_data = await request.json()
+            result = await ExpenseService.graph_filter(request_data)
+
+
+            return ResponseServiceHelper.success_helper(
+                200,
+                result
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))

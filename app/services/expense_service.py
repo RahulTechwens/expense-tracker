@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from mongoengine import DoesNotExist
 import asyncio
 from collections import defaultdict
+from calendar import monthrange
 
 class ExpenseService:
 
@@ -362,4 +363,91 @@ class ExpenseService:
                 "message": "All Data Fetched Successfully",
                 "data": result,
             }
+        return content
+    
+    
+    @staticmethod
+    async def graph_filter(request_data):
+        time_type = request_data.get("time_type")
+        index = request_data.get("index")
+        query = Q()
+        result = []
+
+        if time_type == "daily":
+            date_obj = datetime.fromisoformat(index) 
+            previous_day = date_obj - timedelta(days=1)
+            previous_day_str = previous_day.date().isoformat()
+            date = index
+            query &= Q(date=date)
+            current_data = Expense.objects(query)
+            previous_data = Expense.objects(Q(date=previous_day_str))
+            if current_data.count() == 0 and previous_data.count() == 0:
+                return []
+
+            previous_amount_map = {}
+            for item in previous_data:
+                item_dict = item.to_mongo().to_dict()
+                previous_category = item_dict.get('cat')
+                previous_amount = item_dict.get('amount')
+                previous_amount_map[previous_category] = previous_amount
+
+            for item in current_data:
+                item_dict = item.to_mongo().to_dict()
+                item_dict["_id"] = str(item_dict["_id"])
+                
+                category = item_dict.get('cat')
+                amount = item_dict.get('amount')
+                previous_amount = previous_amount_map.get(category, 0) 
+                
+                result.append({
+                    "category": category,
+                    "amount": amount,
+                    "previous_amount": previous_amount
+                })
+
+        elif time_type == "monthly":
+            current_year = datetime.now().year
+            month = int(index)  # Convert month index (e.g., "02") to integer
+            start_date = f"{current_year}-{month:02d}-01"
+            _, last_day_of_month = monthrange(current_year, month)  # Get the last day of the month
+            end_date = f"{current_year}-{month:02d}-{last_day_of_month:02d}"
+            if month == 1:
+                previous_month = 12
+                previous_year = current_year - 1
+            else:
+                previous_month = month - 1
+                previous_year = current_year
+
+            previous_start_date = f"{previous_year}-{previous_month:02d}-01"
+            _, last_day_of_previous_month = monthrange(previous_year, previous_month)
+            previous_end_date = f"{previous_year}-{previous_month:02d}-{last_day_of_previous_month:02d}"
+
+            current_data = Expense.objects(Q(date__gte=start_date) & Q(date__lte=end_date))
+            previous_data = Expense.objects(Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date))
+
+            if current_data.count() == 0 and previous_data.count() == 0:
+                return []
+
+            previous_amount_map = {}
+            for item in previous_data:
+                item_dict = item.to_mongo().to_dict()
+                previous_category = item_dict.get('cat')
+                previous_amount = item_dict.get('amount')
+                previous_amount_map[previous_category] = previous_amount
+
+            for item in current_data:
+                item_dict = item.to_mongo().to_dict()
+                category = item_dict.get('cat')
+                amount = item_dict.get('amount')
+                previous_amount = previous_amount_map.get(category, 0)
+
+                result.append({
+                    "category": category,
+                    "amount": amount,
+                    "previous_amount": previous_amount
+                })             
+        content = {
+            "message": "All Data Fetched Successfully",
+            "result": result
+        }
         return content
