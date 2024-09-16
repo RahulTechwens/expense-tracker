@@ -220,6 +220,7 @@ class ExpenseService:
         return new_label
 
     @staticmethod
+
     async def time_wise_expense(request_data):
         time_type = request_data.get("time_type")
         index = request_data.get("index")
@@ -254,7 +255,6 @@ class ExpenseService:
                 
                 result = list(categorized_expenses.values())
 
-                
             elif type == "merchant":
                 categorized_expenses = {}
                 
@@ -268,103 +268,69 @@ class ExpenseService:
                             "innerData": []
                         }
                     categorized_expenses[merchant]["innerData"].append(item)
-                result = list(categorized_expenses.values())    
-            
+                result = list(categorized_expenses.values())
 
         elif time_type == "monthly":
-            from datetime import datetime
+            try:
+                month = int(index) + 1
+                current_year = datetime.now().year
+                start_date = f"{current_year}-{month:02d}-01"
+                _, last_day = monthrange(current_year, month)
+                end_date = f"{current_year}-{month:02d}-{last_day:02d}"
 
-            # Get the current year
-            current_year = datetime.now().year
-            if index == "01":
-                start_date = f"{current_year}-01-01"
-                end_date = f"{current_year}-01-31"
-            if index == "02":
-                start_date = f"{current_year}-02-01"
-                end_date = f"{current_year}-02-28"
-            if index == "03":
-                start_date = f"{current_year}-03-01"
-                end_date = f"{current_year}-03-30"
-            if index == "04":
-                start_date = f"{current_year}-04-02"
-                end_date = f"{current_year}-04-30"
-            if index == "05":
-                start_date = f"{current_year}-05-02"
-                end_date = f"{current_year}-05-30"
-            if index == "06":
-                start_date = f"{current_year}-06-02"
-                end_date = f"{current_year}-06-30"
-            if index == "07":
-                start_date = f"{current_year}-07-02"
-                end_date = f"{current_year}-07-30"
-            if index == "08":
-                start_date = f"{current_year}-08-02"
-                end_date = f"{current_year}-08-30"
-            if index == "09":
-                start_date = f"{current_year}-09-01"
-                end_date = f"{current_year}-09-30"
-            if index == "10":
-                start_date = f"{current_year}-10-02"
-                end_date = f"{current_year}-10-30"
-        
-        
-        
-        
-        
-            date = index
-            # Assuming 'date' is the field you want to filter by
-            query = Q(date__gte=start_date) & Q(date__lte=end_date)
+                query = Q(date__gte=start_date) & Q(date__lte=end_date)
+                data = Expense.objects(query)
 
-            # Fetch the data based on the constructed query
-            data = Expense.objects(query)
+                if data.count() == 0:
+                    return []
 
-            # If no data is found, return an empty list
-            if data.count() == 0:
-                return []
+                result = []
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+                    result.append(item_dict)
 
-            result = []
-            for item in data:
-                item_dict = item.to_mongo().to_dict()
-                item_dict["_id"] = str(item_dict["_id"])
-                result.append(item_dict)
-                
-            if type == "category":
-                categorized_expenses = {}
+                if type == "category":
+                    categorized_expenses = {}
 
-                for item in result:
-                    category = item.get("cat")
+                    for item in result:
+                        category = item.get("cat")
+                        
+                        if category not in categorized_expenses:
+                            categorized_expenses[category] = {
+                                "headerName": category,
+                                "innerData": []
+                            }
+                        categorized_expenses[category]["innerData"].append(item)
                     
-                    if category not in categorized_expenses:
-                        categorized_expenses[category] = {
-                            "headerName": category,
-                            "innerData": []
-                        }
-                    categorized_expenses[category]["innerData"].append(item)
-                
-                result = list(categorized_expenses.values())
+                    result = list(categorized_expenses.values())
 
-                
-            elif type == "merchant":
-                categorized_expenses = {}
-                
-                for item in result:
-                    category = item.get("cat")
-                    merchant = item.get("merchant")
+                elif type == "merchant":
+                    categorized_expenses = {}
                     
-                    if merchant not in categorized_expenses:
-                        categorized_expenses[merchant] = {
-                            "headerName": merchant,
-                            "innerData": []
-                        }
-                    categorized_expenses[merchant]["innerData"].append(item)
-                result = list(categorized_expenses.values())
+                    for item in result:
+                        category = item.get("cat")
+                        merchant = item.get("merchant")
+                        
+                        if merchant not in categorized_expenses:
+                            categorized_expenses[merchant] = {
+                                "headerName": merchant,
+                                "innerData": []
+                            }
+                        categorized_expenses[merchant]["innerData"].append(item)
+                    result = list(categorized_expenses.values())
+
+            except ValueError:
+                # Handle case where index cannot be converted to an integer
+                return {"error": "Invalid index value"}
+
         # Return result
         content = {
-                "message": "All Data Fetched Successfully",
-                "data": result,
-            }
+            "message": "All Data Fetched Successfully",
+            "data": result,
+        }
         return content
-    
+
     
     @staticmethod
     async def graph_filter(request_data):
@@ -407,10 +373,12 @@ class ExpenseService:
 
         elif time_type == "monthly":
             current_year = datetime.now().year
-            month = int(index)  # Convert month index (e.g., "02") to integer
+            month = int(index) + 1 
+            
             start_date = f"{current_year}-{month:02d}-01"
-            _, last_day_of_month = monthrange(current_year, month)  # Get the last day of the month
+            _, last_day_of_month = monthrange(current_year, month) 
             end_date = f"{current_year}-{month:02d}-{last_day_of_month:02d}"
+
             if month == 1:
                 previous_month = 12
                 previous_year = current_year - 1
@@ -425,9 +393,11 @@ class ExpenseService:
             current_data = Expense.objects(Q(date__gte=start_date) & Q(date__lte=end_date))
             previous_data = Expense.objects(Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date))
 
+            # Check if both current and previous data are empty
             if current_data.count() == 0 and previous_data.count() == 0:
                 return []
 
+            # Create mapping for previous month amounts
             previous_amount_map = {}
             for item in previous_data:
                 item_dict = item.to_mongo().to_dict()
@@ -435,6 +405,7 @@ class ExpenseService:
                 previous_amount = item_dict.get('amount')
                 previous_amount_map[previous_category] = previous_amount
 
+            # Process current month data and build result list
             for item in current_data:
                 item_dict = item.to_mongo().to_dict()
                 category = item_dict.get('cat')
@@ -445,7 +416,7 @@ class ExpenseService:
                     "category": category,
                     "amount": amount,
                     "previous_amount": previous_amount
-                })             
+                })
         content = {
             "message": "All Data Fetched Successfully",
             "result": result
