@@ -340,95 +340,48 @@ class ExpenseService:
     
     @staticmethod
     async def graph_filter(request_data):
-        time_type = request_data.get("time_type")
-        index = request_data.get("index")
-        query = Q()
+        date = request_data.get("index") 
         result = []
 
-        if time_type == "daily":
-            date_obj = datetime.fromisoformat(index) 
-            previous_day = date_obj - timedelta(days=1)
-            previous_day_str = previous_day.date().isoformat()
-            date = index
-            query &= Q(date=date)
-            current_data = Expense.objects(query)
-            previous_data = Expense.objects(Q(date=previous_day_str))
-            if current_data.count() == 0 and previous_data.count() == 0:
-                return []
+        categories = Cat.objects()
+        specific_date = datetime.strptime(date, '%Y-%m-%d')
+        previous_date = specific_date - timedelta(days=1)
 
-            previous_amount_map = {}
-            for item in previous_data:
-                item_dict = item.to_mongo().to_dict()
-                previous_category = item_dict.get('cat')
-                previous_amount = item_dict.get('amount')
-                previous_amount_map[previous_category] = previous_amount
+        specific_date_str = specific_date.strftime('%Y-%m-%d')
+        previous_date_str = previous_date.strftime('%Y-%m-%d')
 
-            for item in current_data:
-                item_dict = item.to_mongo().to_dict()
-                item_dict["_id"] = str(item_dict["_id"])
-                
-                category = item_dict.get('cat')
-                amount = item_dict.get('amount')
-                previous_amount = previous_amount_map.get(category, 0) 
-                
-                result.append({
-                    "category": category,
-                    "amount": amount,
-                    "previous_amount": previous_amount
-                })
+        total_expense = 0
+        previous_total_expense = 0
 
-        elif time_type == "monthly":
-            current_year = datetime.now().year
-            month = int(index) + 1 
+        for category in categories:
+            label = category.label
             
-            start_date = f"{current_year}-{month:02d}-01"
-            _, last_day_of_month = monthrange(current_year, month) 
-            end_date = f"{current_year}-{month:02d}-{last_day_of_month:02d}"
+            expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str))
+            total_amount = sum(expense.amount for expense in expenses)
+            total_expense += total_amount
+            
+            previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str))
+            previous_total_amount = sum(previous_day_expense.amount for previous_day_expense in previous_day_expenses)
+            previous_total_expense += previous_total_amount
+            
+            result.append(
+                {
+                    "category": label,
+                    "amount": total_amount,
+                    "previous_amount": previous_total_amount,
+                }
+            )
 
-            if month == 1:
-                previous_month = 12
-                previous_year = current_year - 1
-            else:
-                previous_month = month - 1
-                previous_year = current_year
-
-            previous_start_date = f"{previous_year}-{previous_month:02d}-01"
-            _, last_day_of_previous_month = monthrange(previous_year, previous_month)
-            previous_end_date = f"{previous_year}-{previous_month:02d}-{last_day_of_previous_month:02d}"
-
-            current_data = Expense.objects(Q(date__gte=start_date) & Q(date__lte=end_date))
-            previous_data = Expense.objects(Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date))
-
-            # Check if both current and previous data are empty
-            if current_data.count() == 0 and previous_data.count() == 0:
-                return []
-
-            # Create mapping for previous month amounts
-            previous_amount_map = {}
-            for item in previous_data:
-                item_dict = item.to_mongo().to_dict()
-                previous_category = item_dict.get('cat')
-                previous_amount = item_dict.get('amount')
-                previous_amount_map[previous_category] = previous_amount
-
-            # Process current month data and build result list
-            for item in current_data:
-                item_dict = item.to_mongo().to_dict()
-                category = item_dict.get('cat')
-                amount = item_dict.get('amount')
-                previous_amount = previous_amount_map.get(category, 0)
-
-                result.append({
-                    "category": category,
-                    "amount": amount,
-                    "previous_amount": previous_amount
-                })
-        content = {
-            "message": "All Data Fetched Successfully",
-            "result": result
-        }
-        return content
     
+        return result
+    
+    
+    
+    
+    
+    
+    
+    #################################################################################################################
     @staticmethod
     async def graph_category(request_data):
         today = datetime.now()
