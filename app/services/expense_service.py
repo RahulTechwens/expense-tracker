@@ -445,12 +445,18 @@ class ExpenseService:
     #################################################################################################################
     @staticmethod
     async def graph_category(request_data):
+        category_id = request_data.get('cat_id')
         today = datetime.now()
         start_date = today - timedelta(days=180)
 
-        print(f"Querying for expenses from {start_date} to {today}")
 
-        expenses = Expense.objects()
+        if category_id:
+            cats = Cat.objects(id=category_id).only("label")
+            cat_dict = {"label": cat.label for cat in cats}
+            expenses = Expense.objects(cat=cat_dict.get('label'))
+        else:
+            expenses = Expense.objects()
+            
 
         monthly_data = defaultdict(int)
         for i in range(6):
@@ -475,8 +481,8 @@ class ExpenseService:
 
         # Create the result list in the required format
         result = [{"month": str(month), "amount": str(amount)} for month, amount in sorted(monthly_data.items())]
-
-        # Print the result for debugging
-        print(f"Graph data: {result}")
-
-        return result
+        content = {
+            "message": "All Data Fetched Successfully",
+            "data": result,
+        }
+        return content
