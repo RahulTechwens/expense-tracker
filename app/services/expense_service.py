@@ -373,7 +373,11 @@ class ExpenseService:
             )
 
     
-        return result
+        content = {
+            "message": "All Data Fetched Successfully",
+            "data": result,
+        }
+        return content
     
     
     
