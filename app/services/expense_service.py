@@ -340,44 +340,101 @@ class ExpenseService:
     
     @staticmethod
     async def graph_filter(request_data):
-        date = request_data.get("index") 
-        result = []
-
-        categories = Cat.objects()
-        specific_date = datetime.strptime(date, '%Y-%m-%d')
-        previous_date = specific_date - timedelta(days=1)
-
-        specific_date_str = specific_date.strftime('%Y-%m-%d')
-        previous_date_str = previous_date.strftime('%Y-%m-%d')
-
-        total_expense = 0
-        previous_total_expense = 0
-
-        for category in categories:
-            label = category.label
+        time_type = request_data.get("time_type") 
+        if time_type == "monthly":
+            index = request_data.get("index") 
+            result = []
             
-            expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str))
-            total_amount = sum(expense.amount for expense in expenses)
-            total_expense += total_amount
+        
+            month = int(index) + 1
+            current_year = datetime.now().year
+            start_date = f"{current_year}-{month:02d}-01"
+            _, last_day = monthrange(current_year, month)
+            end_date = f"{current_year}-{month:02d}-{last_day:02d}"
             
-            previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str))
-            previous_total_amount = sum(previous_day_expense.amount for previous_day_expense in previous_day_expenses)
-            previous_total_expense += previous_total_amount
             
-            result.append(
-                {
-                    "category": label,
-                    "amount": total_amount,
-                    "previous_amount": previous_total_amount,
+            previous_month = int(index)
+            previous_start_date = f"{current_year}-{previous_month:02d}-01"
+            _, last_day = monthrange(current_year, previous_month)
+            previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}"
+            
+            
+            
+            
+            
+            categories = Cat.objects()
+            total_expense = 0
+            previous_total_expense = 0
+            for category in categories:
+                label = category.label
+                expenses = Expense.objects(
+                    Q(cat=label) & Q(date__gte=start_date) & Q(date__lte=end_date)
+                )
+                total_amount = sum(expense.amount for expense in expenses)
+                total_expense = total_expense + total_amount
+                previous_day_expenses = Expense.objects(
+                    Q(cat=label)
+                    & Q(date__gte=previous_start_date)
+                    & Q(date__lte=previous_end_date)
+                )
+                previous_total_amount = sum(
+                    previous_day_expense.amount
+                    for previous_day_expense in previous_day_expenses
+                )
+                previous_total_expense = previous_total_expense + previous_total_amount
+                result.append(
+                    {
+                        "category": label,
+                        "amount": total_amount,
+                        "previous_amount": previous_total_amount,
+                    }
+                )
+            
+            content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+            return content
+            
+        elif time_type == "daily":
+            date = request_data.get("index") 
+            result = []
+
+            categories = Cat.objects()
+            specific_date = datetime.strptime(date, '%Y-%m-%d')
+            previous_date = specific_date - timedelta(days=1)
+
+            specific_date_str = specific_date.strftime('%Y-%m-%d')
+            previous_date_str = previous_date.strftime('%Y-%m-%d')
+
+            total_expense = 0
+            previous_total_expense = 0
+
+            for category in categories:
+                label = category.label
+                
+                expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str))
+                total_amount = sum(expense.amount for expense in expenses)
+                total_expense += total_amount
+                
+                previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str))
+                previous_total_amount = sum(previous_day_expense.amount for previous_day_expense in previous_day_expenses)
+                previous_total_expense += previous_total_amount
+                
+                result.append(
+                    {
+                        "category": label,
+                        "amount": total_amount,
+                        "previous_amount": previous_total_amount,
+                    }
+                )
+
+        
+                content = {
+                    "message": "All Data Fetched Successfully",
+                    "data": result,
                 }
-            )
-
-    
-        content = {
-            "message": "All Data Fetched Successfully",
-            "data": result,
-        }
-        return content
+                return content
     
     
     
