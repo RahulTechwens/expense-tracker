@@ -22,7 +22,7 @@ class ParseSmsController:
         "Recharge": ["recharge", "mobile"],
     }
 
-    pattern = r"([A-Za-z\s]+(?:Bank|BOB))"
+    pattern = r"([A-Za-z\s]+(?:Bank(?:\sof\s[A-Za-z]+)?|BOB))"
 
     regex_for_sms_parsing = r"(?:Acct|A\/c|Account|A\/C|A\/C|a\/c|a\/C)[*\s]*(\w+)\s*(?:is|has been)?\s*(credited|debited|CREDITED|DEBITED)\s*(?:with)?\s*(?:INR|Rs\.?)\s*([\d,]+\.\d{2})(?:.*?(?:Team|UPI:.*?-))?\s*([\w\s]+(?:Bank|BANK|bank))"
 
@@ -146,24 +146,22 @@ class ParseSmsController:
             # if parsed_msg:
             return extracted_info
 
-        elif any(
-            bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]
-        ):
-            regex_for_axis = {
-                "transaction_type": r"(Credited|Debited)",
-                "amount": r"Rs\.(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)",
-                "account_number": r"A/c\s\.\.\.\d{4}",
-                "bank": r"-\s([A-Za-z\s]+)$",
-                "recipient": r"by\s([a-zA-Z0-9._]+)",
-                "date_time": r"\((\d{2}-\d{2}-\d{4})\s(\d{2}:\d{2}:\d{2})\)",
-            }
-            extracted_info = {}
-            for key, pattern in regex_for_axis.items():
-                match = re.search(pattern, message)
-                if match:
-                    extracted_info[key] = match.group(1).strip()
+        elif any(bank in parsed_bank_name for bank in ["- Bank of Baroda"]):
+            regex_for_hdfc = r"Rs\.(?P<amount>\d+\.?\d*)\s(?P<transaction_type>Credited|Debited)\sto\sA/c\s\.\.\.(?P<account_number>\d{4})\sthru\s(?:UPI/\d+)?\sby\s(?P<recipient>\w+\.\w+)\S*\. Total.*\((?P<date_time>\d{2}-\d{2}-\d{4}\s\d{2}:\d{2}:\d{2})\)\s-\s(?P<bank>[A-Za-z\s]+)"
 
-            # if parsed_msg:
-            return extracted_info
+            parsed_msg = re.search(regex_for_hdfc, message, re.IGNORECASE)
+
+            if parsed_msg:
+                return dict(
+                    transaction_type=(
+                        "credit" if parsed_msg.group(1) == "Sent" else "debit"
+                    ),
+                    amount=parsed_msg.group(2),
+                    bank=parsed_msg.group(3),
+                    account_number=parsed_msg.group(4),
+                    recipient=parsed_msg.group(5),
+                )
+            else:
+                return {"error": "Failed to parse SMS details"}
 
         return None
