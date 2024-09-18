@@ -46,4 +46,4 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
           docker stop expense-tracker-app || true
           docker rm expense-tracker-app || true
-          docker run -d -p 80:80 --name expense-tracker-app ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
+          docker run -d -p 4000:4000 --name expense-tracker-app ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
