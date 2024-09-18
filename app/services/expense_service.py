@@ -79,6 +79,7 @@ class ExpenseService:
         cats = Cat.objects(id__in=category_ids).only("label")
         cat_dict = {str(cat.id): cat.label for cat in cats}
         categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
+        print(categories)
         query = Q()
         result = []
         if categories:
@@ -261,12 +262,12 @@ class ExpenseService:
                 for item in result:
                     category = item.get("cat")
                     merchant = item.get("merchant")
-                    cat_obj = Cat.objects(Q(label=category)).first()
-                    cat_id = str(cat_obj.id )if cat_obj else None
+                    # cat_obj = Cat.objects(Q(label=category)).first()
+                    # cat_id = str(cat_obj.id )if cat_obj else None
                     if merchant not in categorized_expenses:
                         categorized_expenses[merchant] = {
                             "headerName": merchant,
-                            "cat_id":cat_id,
+                            "cat_id":item.get("merchant_slug"),
                             "innerData": []
                         }
                     categorized_expenses[merchant]["innerData"].append(item)
@@ -315,12 +316,12 @@ class ExpenseService:
                     for item in result:
                         category = item.get("cat")
                         merchant = item.get("merchant")
-                        cat_obj = Cat.objects(Q(label=category)).first()
-                        cat_id = str(cat_obj.id )if cat_obj else None
+                        # cat_obj = Cat.objects(Q(label=category)).first()
+                        # cat_id = str(cat_obj.id )if cat_obj else None
                         if merchant not in categorized_expenses:
                             categorized_expenses[merchant] = {
                                 "headerName": merchant,
-                                "cat_id":cat_id,
+                                "cat_id":item.get("merchant_slug"),
                                 "innerData": []
                             }
                         categorized_expenses[merchant]["innerData"].append(item)
