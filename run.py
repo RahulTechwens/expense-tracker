@@ -6,6 +6,6 @@ load_dotenv()
 
 if __name__ == "__main__":
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
-    host=os.getenv("HOST")
-    port=int(os.getenv("PORT"))
+    host='0.0.0.0'
+    port=4000
     uvicorn.run("app.main:app", host= host, port= port, reload=True)

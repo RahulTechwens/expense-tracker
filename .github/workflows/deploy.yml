@@ -1,0 +1,49 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main  # Trigger the action on push to the main branch
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Pyhton
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9' 
+
+    - name: Install dependencies
+      run:  |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt 
+
+    - name: Log in to Docker Hub
+      run: echo '${{ secrets.DOCKER_PASSWORD }}' | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+    - name: Build Docker image
+      run: docker build -t expense-tracker-app .
+
+    - name: Push Docker image
+      run: docker tag expense-tracker-app:latest ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
+    - name: Push Docker image to Docker Hub
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
+
+    - name: SSH into EC2 and Deploy
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu  # Update to match your EC2 username
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
+          docker stop expense-tracker-app || true
+          docker rm expense-tracker-app || true
+          docker run -d -p 4000:4000 --name expense-tracker-app ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest

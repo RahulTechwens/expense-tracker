@@ -88,6 +88,7 @@ class ExpenseService:
         cats = Cat.objects(id__in=category_ids).only("label")
         cat_dict = {str(cat.id): cat.label for cat in cats}
         categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
+        print(categories)
         query = Q()
         result = []
         if categories:
@@ -270,12 +271,12 @@ class ExpenseService:
                 for item in result:
                     category = item.get("cat")
                     merchant = item.get("merchant")
-                    cat_obj = Cat.objects(Q(label=category)).first()
-                    cat_id = str(cat_obj.id )if cat_obj else None
+                    # cat_obj = Cat.objects(Q(label=category)).first()
+                    # cat_id = str(cat_obj.id )if cat_obj else None
                     if merchant not in categorized_expenses:
                         categorized_expenses[merchant] = {
                             "headerName": merchant,
-                            "cat_id":cat_id,
+                            "cat_id":item.get("merchant_slug"),
                             "innerData": []
                         }
                     categorized_expenses[merchant]["innerData"].append(item)
@@ -324,12 +325,12 @@ class ExpenseService:
                     for item in result:
                         category = item.get("cat")
                         merchant = item.get("merchant")
-                        cat_obj = Cat.objects(Q(label=category)).first()
-                        cat_id = str(cat_obj.id )if cat_obj else None
+                        # cat_obj = Cat.objects(Q(label=category)).first()
+                        # cat_id = str(cat_obj.id )if cat_obj else None
                         if merchant not in categorized_expenses:
                             categorized_expenses[merchant] = {
                                 "headerName": merchant,
-                                "cat_id":cat_id,
+                                "cat_id":item.get("merchant_slug"),
                                 "innerData": []
                             }
                         categorized_expenses[merchant]["innerData"].append(item)
@@ -399,12 +400,12 @@ class ExpenseService:
                     }
                 )
             
-            return result
+            content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+            return content
             
-            
-            
-            
-            return {start_date,end_date}
         elif time_type == "daily":
             date = request_data.get("index") 
             result = []
@@ -439,7 +440,11 @@ class ExpenseService:
                 )
 
         
-            return result
+                content = {
+                    "message": "All Data Fetched Successfully",
+                    "data": result,
+                }
+                return content
     
     
     
@@ -450,12 +455,18 @@ class ExpenseService:
     #################################################################################################################
     @staticmethod
     async def graph_category(request_data):
+        category_id = request_data.get('cat_id')
         today = datetime.now()
         start_date = today - timedelta(days=180)
 
-        print(f"Querying for expenses from {start_date} to {today}")
 
-        expenses = Expense.objects()
+        if category_id:
+            cats = Cat.objects(id=category_id).only("label")
+            cat_dict = {"label": cat.label for cat in cats}
+            expenses = Expense.objects(cat=cat_dict.get('label'))
+        else:
+            expenses = Expense.objects()
+            
 
         monthly_data = defaultdict(int)
         for i in range(6):
@@ -480,8 +491,8 @@ class ExpenseService:
 
         # Create the result list in the required format
         result = [{"month": str(month), "amount": str(amount)} for month, amount in sorted(monthly_data.items())]
-
-        # Print the result for debugging
-        print(f"Graph data: {result}")
-
-        return result
+        content = {
+            "message": "All Data Fetched Successfully",
+            "data": result,
+        }
+        return content
