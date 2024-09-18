@@ -7,6 +7,7 @@ class Expense(Document):
     acct = StringField(required=True)
     bank = StringField(required=True)
     date = StringField(required=True)
+    merchant_slug = StringField(required=False)
     # date = DateTimeField(default=datetime.datetime.time)
     body = StringField()
     amount = IntField(required=True)
