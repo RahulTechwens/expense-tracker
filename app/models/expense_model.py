@@ -4,6 +4,7 @@ import datetime
 class Expense(Document):
     cat = StringField(required=True)
     merchant = StringField(required=True)
+    merchant_slug = StringField(required=True)
     acct = StringField(required=True)
     bank = StringField(required=True)
     date = StringField(required=True)

@@ -7,7 +7,7 @@ from mongoengine import ValidationError
 from fastapi.responses import JSONResponse  # type: ignore
 from concurrent.futures import ThreadPoolExecutor
 from mongoengine import DoesNotExist
-import asyncio
+import asyncio, re
 from collections import defaultdict
 from calendar import monthrange
 from mongoengine.queryset.visitor import Q
@@ -15,10 +15,19 @@ class ExpenseService:
 
     @staticmethod
     async def insert_expense(expense_request):
+        def generate_slug(merchant_name):
+            merchant_name = merchant_name.lower()
+            merchant_name = re.sub(r'[\s\-]+', '_', merchant_name)
+            merchant_slug = re.sub(r'[^\w_]', '', merchant_name)
+            return merchant_slug
+        
         def save_expense():
+            merchant=expense_request.get("merchant")
+            merchant_slug = generate_slug(merchant)
             expense = Expense(
                 cat=expense_request.get("cat"),
                 merchant=expense_request.get("merchant"),
+                merchant_slug=merchant_slug,
                 acct=expense_request.get("acct"),
                 bank=expense_request.get("bank"),
                 date=expense_request.get("date"),

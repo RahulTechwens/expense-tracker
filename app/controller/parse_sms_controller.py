@@ -55,6 +55,12 @@ class ParseSmsController:
             if any(keyword in message_lower for keyword in keywords):
                 return category
         return "Other"
+    
+    def generate_slug(merchant_name):
+        merchant_name = merchant_name.lower()
+        merchant_name = re.sub(r'[\s\-]+', '_', merchant_name)
+        merchant_slug = re.sub(r'[^\w_]', '', merchant_name)
+        return merchant_slug
 
     @staticmethod
     def get_parsed_sms(parsed_bank_name: list, message: str, parsed_text: str):
