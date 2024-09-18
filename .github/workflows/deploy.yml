@@ -31,9 +31,9 @@ jobs:
       run: docker build -t expense-tracker-app .
 
     - name: Push Docker image
-      run: docker tag expense-tracker-app:latest "${{ secrets.DOCKER_USERNAME }}"/expense-tracker-app:latest
+      run: docker tag expense-tracker-app:latest ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
     - name: Push Docker image to Docker Hub
-      run: docker push "${{ secrets.DOCKER_USERNAME }}"/expense-tracker-app:latest
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
 
     - name: SSH into EC2 and Deploy
       uses: appleboy/ssh-action@v0.1.6
@@ -42,7 +42,7 @@ jobs:
         username: ubuntu  # Update to match your EC2 username
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          docker pull "${{ secrets.DOCKER_USERNAME }}"/expense-tracker-app:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
           docker stop expense-tracker-app || true
           docker rm expense-tracker-app || true
-          docker run -d -p 80:3000 --name expense-tracker-app "${{ secrets.DOCKER_USERNAME }}"/expense-tracker-app:latest
+          docker run -d -p 80:3000 --name expense-tracker-app ${{ secrets.DOCKER_USERNAME }}/expense-tracker-app:latest
