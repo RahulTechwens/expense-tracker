@@ -12,4 +12,4 @@ class MongoDB:
     async def get_database(self):
         return self.db
 
-mongodb = MongoDB(os.getenv("MONGODB_URL"), 'expenses')
+mongodb = MongoDB('mongodb+srv://nelaykarmakar:0u7rxkmMOxmXJFjj@expensetracker.i0cqo.mongodb.net/', 'expenses')
