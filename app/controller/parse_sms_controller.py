@@ -1,7 +1,8 @@
 from fastapi.responses import JSONResponse  # type: ignore
 from fastapi import HTTPException  # type: ignore
 import re
-
+from datetime import datetime
+from app.models.expense_model import Expense
 
 class ParseSmsController:
     categories = {
@@ -33,7 +34,7 @@ class ParseSmsController:
             parsed_bank = re.findall(
                 self.pattern, request_data["message"], re.IGNORECASE
             )
-            parsed_message = self.get_parsed_sms(parsed_bank, request_data["message"])
+            parsed_message = self.get_parsed_sms(parsed_bank, request_data["message"], parsed_text)
 
             return JSONResponse(
                 status_code=200,
@@ -54,9 +55,15 @@ class ParseSmsController:
             if any(keyword in message_lower for keyword in keywords):
                 return category
         return "Other"
+    
+    def generate_slug(merchant_name):
+        merchant_name = merchant_name.lower()
+        merchant_name = re.sub(r'[\s\-]+', '_', merchant_name)
+        merchant_slug = re.sub(r'[^\w_]', '', merchant_name)
+        return merchant_slug
 
     @staticmethod
-    def get_parsed_sms(parsed_bank_name: list, message: str):
+    def get_parsed_sms(parsed_bank_name: list, message: str, parsed_text: str):
         if any(
             bank in parsed_bank_name for bank in ["Team IDFC FIRST Bank", "ICICI Bank"]
         ):
@@ -128,6 +135,14 @@ class ParseSmsController:
 
             # if parsed_msg:
             return extracted_info
+        
+        
+        
+        
+        
+        
+        
+        
         elif any(bank in parsed_bank_name for bank in [" Axis Bank", "Axis Bank"]):
             regex_for_axis = {
                 "transaction_type": r"(credited|debited)",
@@ -142,9 +157,33 @@ class ParseSmsController:
                 match = re.search(pattern, message)
                 if match:
                     extracted_info[key] = match.group(1).strip()
+                    
+                    
+            expense = Expense(
+                cat=parsed_text,
+                merchant=extracted_info.get("recipient", "N/A"),
+                acct=extracted_info["account_number"],
+                bank=extracted_info["bank"],
+                date=extracted_info["date_time"],
+                amount=float(extracted_info["amount"]),
+                type=extracted_info["transaction_type"],
+                method = "N/A",
+                manual= False,
+            )
+            
+            
+
+            expense.save()  # Await the save operation if you're in an async context
+            return str(expense.id)
 
             # if parsed_msg:
-            return extracted_info
+            # return extracted_info
+
+
+
+
+
+
 
         elif any(
             bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]

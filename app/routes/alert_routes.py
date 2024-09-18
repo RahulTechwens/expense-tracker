@@ -31,7 +31,6 @@ async def toggle_status(
     return await AlertController.toggle_status(alert_id, status)
 
 @router.delete("/alerts")
-
 async def delete_alerts(alert_ids:str = Query(...)):
     return await AlertController.delete_alert(alert_ids)
 
