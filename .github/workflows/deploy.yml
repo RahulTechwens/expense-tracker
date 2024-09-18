@@ -22,13 +22,10 @@ jobs:
       run:  |
         python -m venv venv
         source venv/bin/activate
-        pip install -r requirements.txt
-
-    - name: Emni dekchi
-      run: echo rahulsabui1999 
+        pip install -r requirements.txt 
 
     - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
     - name: Build Docker image
       run: docker build -t expense-tracker-app .
