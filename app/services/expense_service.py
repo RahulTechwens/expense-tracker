@@ -11,6 +11,9 @@ import asyncio, re
 from collections import defaultdict
 from calendar import monthrange
 from mongoengine.queryset.visitor import Q
+from bson.objectid import ObjectId
+
+
 class ExpenseService:
 
     @staticmethod
@@ -85,14 +88,18 @@ class ExpenseService:
     async def filter_sms_category(
         category_ids: List[str], start_date, end_date, group_by
     ):
-        cats = Cat.objects(id__in=category_ids).only("label")
-        cat_dict = {str(cat.id): cat.label for cat in cats}
-        categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
-        print(categories)
         query = Q()
+        if ObjectId.is_valid(category_ids):
+            cats = Cat.objects(id__in=category_ids).only("label")
+            cat_dict = {str(cat.id): cat.label for cat in cats}
+            categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
+            query &= Q(cat__in=categories)
+            
+        else:
+            categories=category_ids
+            query &= Q(merchant_slug__in=category_ids)
         result = []
         if categories:
-            query &= Q(cat__in=categories)
             data = Expense.objects(query)
             if data.count() == 0:
                 return []

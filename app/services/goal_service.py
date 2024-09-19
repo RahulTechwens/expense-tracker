@@ -32,14 +32,17 @@ class GoalsService:
         for goal in goals:
             goal_dict = goal.to_mongo().to_dict()  
 
+            print(goal_dict)
             if "_id" in goal_dict:
                 goal_dict["_id"] = str(goal_dict["_id"]) 
+                goal_dict["amount_saved"] = 2000
+                goal_dict["amount_saved_percentage"] = 50
             
-            if "categories" in goal_dict:
-                for category in goal_dict["categories"]:
-                    if "_id" in category:
-                        category["_id"] = str(category["_id"])  
-                    
+            # if "categories" in goal_dict:
+            #     for category in goal_dict["categories"]:
+            #         if "_id" in category:
+            #             category["_id"] = str(category["_id"])  
+            
             result_goals.append(goal_dict)  
         
         return result_goals
