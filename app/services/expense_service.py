@@ -496,3 +496,19 @@ class ExpenseService:
             "data": result,
         }
         return content
+    
+    
+    @staticmethod
+    async def alter_cat(alter_request):
+        expense_id = alter_request.get("expense_id")
+        new_cat_id = alter_request.get("new_cat_id")
+        
+        expense = Expense.objects(id=expense_id).first()
+        new_cat = Cat.objects(id=new_cat_id).first()
+        new_cat_name = new_cat.label
+        
+        if expense:
+            expense.cat = new_cat_name
+            expense.save()
+        return {"Category changed to ":new_cat_name}
+    
