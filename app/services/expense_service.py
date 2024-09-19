@@ -11,7 +11,7 @@ import asyncio, re
 from collections import defaultdict
 from calendar import monthrange
 from mongoengine.queryset.visitor import Q
-from bson.objectid import ObjectId
+# from bson.objectid import ObjectId
 
 
 class ExpenseService:
@@ -89,7 +89,7 @@ class ExpenseService:
         category_ids: List[str], start_date, end_date, group_by
     ):
         query = Q()
-        if ObjectId.is_valid(category_ids):
+        if True:
             cats = Cat.objects(id__in=category_ids).only("label")
             cat_dict = {str(cat.id): cat.label for cat in cats}
             categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
