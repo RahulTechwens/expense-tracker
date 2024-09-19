@@ -249,18 +249,19 @@ class ExpenseService:
         if time_type == "daily":
             date = index
             query &= Q(date=date)
-            data = Expense.objects(query)
-            if data.count() == 0:
-                return []
-
-            result = []
-            for item in data:
-                item_dict = item.to_mongo().to_dict()
-                item_dict["_id"] = str(item_dict["_id"])
-                result.append(item_dict)
+          
                 
             if type == "category":
                 categorized_expenses = {}
+                data = Expense.objects(query)
+                if data.count() == 0:
+                    return []
+
+                result = []
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+                    result.append(item_dict)
                 for item in result:
                     category = item.get("cat")
                     cat_obj = Cat.objects(Q(label=category)).first()
@@ -277,7 +278,15 @@ class ExpenseService:
 
             elif type == "merchant":
                 categorized_expenses = {}
-                
+                data = Expense.objects(query)
+                if data.count() == 0:
+                    return []
+
+                result = []
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+                    result.append(item_dict)
                 for item in result:
                     category = item.get("cat")
                     merchant = item.get("merchant")
@@ -291,7 +300,16 @@ class ExpenseService:
                         }
                     categorized_expenses[merchant]["innerData"].append(item)
                 result = list(categorized_expenses.values())
+            elif type == "all":
+                data = Expense.objects(query).order_by('-date')
+                if data.count() == 0:
+                    return []
 
+                result = []
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+                    result.append(item_dict)
         elif time_type == "monthly":
             try:
                 month = int(index) + 1
@@ -303,7 +321,6 @@ class ExpenseService:
 
 
                 if type == "category":
-                    # query = Q(date__gte=start_date) & Q(date__lte=end_date)
                     data = Expense.objects(query)
 
                     if data.count() == 0:
