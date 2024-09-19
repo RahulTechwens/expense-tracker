@@ -89,7 +89,7 @@ class ExpenseService:
         category_ids: List[str], start_date, end_date, group_by
     ):
         query = Q()
-        if ObjectId.is_valid(category_ids):
+        if ObjectId.is_valid(category_ids[0]): # will be resolving later
             cats = Cat.objects(id__in=category_ids).only("label")
             cat_dict = {str(cat.id): cat.label for cat in cats}
             categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
@@ -98,6 +98,7 @@ class ExpenseService:
             categories=category_ids
             query &= Q(merchant_slug__in=category_ids)
         result = []
+        print(categories, query)
         if categories:
             data = Expense.objects(query)
             if data.count() == 0:
@@ -295,21 +296,22 @@ class ExpenseService:
                 start_date = f"{current_year}-{month:02d}-01"
                 _, last_day = monthrange(current_year, month)
                 end_date = f"{current_year}-{month:02d}-{last_day:02d}"
-
                 query = Q(date__gte=start_date) & Q(date__lte=end_date)
-                data = Expense.objects(query)
 
-                if data.count() == 0:
-                    return []
-
-                result = []
-                for item in data:
-                    item_dict = item.to_mongo().to_dict()
-                    item_dict["_id"] = str(item_dict["_id"])
-                    result.append(item_dict)
 
                 if type == "category":
-                    categorized_expenses = {}
+                    # query = Q(date__gte=start_date) & Q(date__lte=end_date)
+                    data = Expense.objects(query)
+
+                    if data.count() == 0:
+                        return []
+
+                    result = []
+                    for item in data:
+                        item_dict = item.to_mongo().to_dict()
+                        item_dict["_id"] = str(item_dict["_id"])
+                        result.append(item_dict)
+                        categorized_expenses = {}
 
                     for item in result:
                         category = item.get("cat")
@@ -327,7 +329,17 @@ class ExpenseService:
 
                 elif type == "merchant":
                     categorized_expenses = {}
-                    
+                    # query = Q(date__gte=start_date) & Q(date__lte=end_date)
+                    data = Expense.objects(query)
+
+                    if data.count() == 0:
+                        return []
+
+                    result = []
+                    for item in data:
+                        item_dict = item.to_mongo().to_dict()
+                        item_dict["_id"] = str(item_dict["_id"])
+                        result.append(item_dict)
                     for item in result:
                         category = item.get("cat")
                         merchant = item.get("merchant")
@@ -341,7 +353,21 @@ class ExpenseService:
                             }
                         categorized_expenses[merchant]["innerData"].append(item)
                     result = list(categorized_expenses.values())
+                
+                elif type == "all":
+                    query = Q(date__gte=start_date) & Q(date__lte=end_date)
+                    # data = Expense.objects(query)
+                    data = Expense.objects(query).order_by('-date')
 
+                    if data.count() == 0:
+                        return []
+
+                    result = []
+                    for item in data:
+                        item_dict = item.to_mongo().to_dict()
+                        item_dict["_id"] = str(item_dict["_id"])
+                        result.append(item_dict)
+                     
             except ValueError:
                 # Handle case where index cannot be converted to an integer
                 return {"error": "Invalid index value"}
@@ -462,14 +488,21 @@ class ExpenseService:
     @staticmethod
     async def graph_category(request_data):
         category_id = request_data.get('cat_id')
+        query = Q()
+        if ObjectId.is_valid(category_id):
+            cats = Cat.objects(id=category_id).only("label")
+            cat_dict = {"label": cat.label for cat in cats}
+            query &= Q(cat=cat_dict.get('label'))
+        else:
+            query &= Q(merchant_slug=category_id)
+            
         today = datetime.now()
         start_date = today - timedelta(days=180)
 
 
         if category_id:
-            cats = Cat.objects(id=category_id).only("label")
-            cat_dict = {"label": cat.label for cat in cats}
-            expenses = Expense.objects(cat=cat_dict.get('label'))
+           
+            expenses = Expense.objects(query)
         else:
             expenses = Expense.objects()
             
