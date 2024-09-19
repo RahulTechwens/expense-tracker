@@ -68,7 +68,7 @@ class ExpenseService:
                     cat = Cat(
                         icon_id=expense_request.get("icon_id"),
                         label=expense_request.get("label"),
-                        type=expense_request.get("type"),
+                        type="custom", # type will always custom beacuse no predefined cat is allowed to add externally
                         color_code=expense_request.get("color_code"),
                         # parent_genre_id=expense_request.get("parent_genre_id"),
                     )
@@ -519,5 +519,5 @@ class ExpenseService:
         if expense:
             expense.cat = new_cat_name
             expense.save()
-        return {"message":"categories updated"}
+        return {"message":"category updated"}
     
