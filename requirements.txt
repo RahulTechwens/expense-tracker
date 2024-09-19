@@ -7,5 +7,7 @@ pydantic
 sqlalchemy
 pytest
 python-multipart
-mongoengine
-pymongo
+# mongoengine
+# pymongo
+mongoengine==0.23.1
+pymongo==3.12.0
