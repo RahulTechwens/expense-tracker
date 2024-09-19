@@ -94,7 +94,6 @@ class ExpenseService:
             cat_dict = {str(cat.id): cat.label for cat in cats}
             categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
             query &= Q(cat__in=categories)
-            
         else:
             categories=category_ids
             query &= Q(merchant_slug__in=category_ids)
