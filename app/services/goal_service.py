@@ -27,25 +27,26 @@ class GoalsService:
 
     async def all_goals():
         goals = Goal.objects()  
-        
         result_goals = []
         for goal in goals:
-            goal_dict = goal.to_mongo().to_dict()  
-
-            print(goal_dict)
+            goal_dict = goal.to_mongo().to_dict()
+            savings_entries = Savings.objects(parent_goal_id=str(goal_dict.get("_id")))
+            result_savings = []
+            
+            for savings in savings_entries:
+                savings_dict = savings.to_mongo().to_dict()
+                result_savings.append({
+                    'entry_amount': savings_dict.get('entry_amount')
+                })
             if "_id" in goal_dict:
-                goal_dict["_id"] = str(goal_dict["_id"]) 
-                goal_dict["amount_saved"] = 2000
-                goal_dict["amount_saved_percentage"] = 50
-            
-            # if "categories" in goal_dict:
-            #     for category in goal_dict["categories"]:
-            #         if "_id" in category:
-            #             category["_id"] = str(category["_id"])  
-            
-            result_goals.append(goal_dict)  
+                goal_dict["_id"] = str(goal_dict["_id"])
+            total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
+            goal_dict["amount_saved"] = total_savings
+            goal_dict["amount_saved_percentage"] = (total_savings / goal_dict.get('target_amount', 1)) * 100 
+            result_goals.append(goal_dict)
         
         return result_goals
+
 
 
     async def add_savings(entry_request):
