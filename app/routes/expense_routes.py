@@ -27,7 +27,7 @@ async def filter_sms(
 
 # @router.put("/expense/{}")
 
-@router.post("/custom-cat/add")
+@router.post("/cat/add")
 async def add_cat( request: Request):
     return await ExpenseController.create_custom_cat(request)
 

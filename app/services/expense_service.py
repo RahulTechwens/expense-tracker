@@ -1,5 +1,5 @@
 from app.db.connection import mongodb
-from app.models.expense_model import Expense, Cat, Message, CustomCat
+from app.models.expense_model import Expense, Cat, Message
 from typing import List
 from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q  # type: ignore
@@ -11,6 +11,9 @@ import asyncio, re
 from collections import defaultdict
 from calendar import monthrange
 from mongoengine.queryset.visitor import Q
+from bson.objectid import ObjectId
+
+
 class ExpenseService:
 
     @staticmethod
@@ -52,20 +55,22 @@ class ExpenseService:
     async def insert_custom_cat(expense_request):
         parent_genre_id = expense_request.get("parent_genre_id")
         try:
-            is_parent = Cat.objects.get(id=parent_genre_id)
+            # is_parent = Cat.objects.get(id=parent_genre_id)
             label = expense_request.get("label")
             existing_cat = Cat.objects(label=label).first()
-            existing_custom_cat = CustomCat.objects(label=label).first()
+            # existing_custom_cat = Cat.objects(label=label).first()
             
-            if existing_cat or existing_custom_cat:
+            if existing_cat:
                 raise ValidationError(f"The label '{label}' already exists.")
             else:
 
                 def save_cat():
-                    cat = CustomCat(
+                    cat = Cat(
                         icon_id=expense_request.get("icon_id"),
                         label=expense_request.get("label"),
-                        parent_genre_id=expense_request.get("parent_genre_id"),
+                        type=expense_request.get("type"),
+                        color_code=expense_request.get("color_code"),
+                        # parent_genre_id=expense_request.get("parent_genre_id"),
                     )
                     cat.save()
                     return str(cat.id)
@@ -85,14 +90,17 @@ class ExpenseService:
     async def filter_sms_category(
         category_ids: List[str], start_date, end_date, group_by
     ):
-        cats = Cat.objects(id__in=category_ids).only("label")
-        cat_dict = {str(cat.id): cat.label for cat in cats}
-        categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
-        print(categories)
         query = Q()
+        if ObjectId.is_valid(category_ids):
+            cats = Cat.objects(id__in=category_ids).only("label")
+            cat_dict = {str(cat.id): cat.label for cat in cats}
+            categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
+            query &= Q(cat__in=categories)
+        else:
+            categories=category_ids
+            query &= Q(merchant_slug__in=category_ids)
         result = []
         if categories:
-            query &= Q(cat__in=categories)
             data = Expense.objects(query)
             if data.count() == 0:
                 return []
@@ -217,11 +225,12 @@ class ExpenseService:
 
         return result
 
+    # Check custom or predefined 
     @staticmethod
     async def rename_custom_cat(rename_request):
         id = rename_request.get("id")
         new_label = rename_request.get("new_label")
-        cat = CustomCat.objects(id=id).first()
+        cat = Cat.objects(id=id).first()
         if cat:
             cat.label = new_label
             cat.save()
@@ -510,5 +519,5 @@ class ExpenseService:
         if expense:
             expense.cat = new_cat_name
             expense.save()
-        return {"Category changed to ":new_cat_name}
+        return {"message":"categories updated"}
     
