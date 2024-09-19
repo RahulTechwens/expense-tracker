@@ -25,18 +25,20 @@ class Expense(Document):
 class Cat(Document):
     icon_id = IntField(required=True)
     label = StringField(required=True)
+    type = StringField(required=True)
+    color_code = StringField(required=False)
     meta = {
         'collection': 'categories'
     }
     
 
-class CustomCat(Document):
-    icon_id = IntField(required=True)
-    label = StringField(required=True)
-    parent_genre_id = StringField(required=True)
-    meta = {
-        'collection': 'custom_categories'
-    }
+# class CustomCat(Document):
+#     icon_id = IntField(required=True)
+#     label = StringField(required=True)
+#     parent_genre_id = StringField(required=True)
+#     meta = {
+#         'collection': 'custom_categories'
+#     }
     
     
     
