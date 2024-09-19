@@ -1,5 +1,5 @@
 from app.db.connection import mongodb
-from app.models.expense_model import Expense, Cat, Message, CustomCat
+from app.models.expense_model import Expense, Cat, Message
 from typing import List
 from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q  # type: ignore
@@ -55,20 +55,22 @@ class ExpenseService:
     async def insert_custom_cat(expense_request):
         parent_genre_id = expense_request.get("parent_genre_id")
         try:
-            is_parent = Cat.objects.get(id=parent_genre_id)
+            # is_parent = Cat.objects.get(id=parent_genre_id)
             label = expense_request.get("label")
             existing_cat = Cat.objects(label=label).first()
-            existing_custom_cat = CustomCat.objects(label=label).first()
+            # existing_custom_cat = Cat.objects(label=label).first()
             
-            if existing_cat or existing_custom_cat:
+            if existing_cat:
                 raise ValidationError(f"The label '{label}' already exists.")
             else:
 
                 def save_cat():
-                    cat = CustomCat(
+                    cat = Cat(
                         icon_id=expense_request.get("icon_id"),
                         label=expense_request.get("label"),
-                        parent_genre_id=expense_request.get("parent_genre_id"),
+                        type=expense_request.get("type"),
+                        color_code=expense_request.get("color_code"),
+                        # parent_genre_id=expense_request.get("parent_genre_id"),
                     )
                     cat.save()
                     return str(cat.id)
@@ -223,11 +225,12 @@ class ExpenseService:
 
         return result
 
+    # Check custom or predefined 
     @staticmethod
     async def rename_custom_cat(rename_request):
         id = rename_request.get("id")
         new_label = rename_request.get("new_label")
-        cat = CustomCat.objects(id=id).first()
+        cat = Cat.objects(id=id).first()
         if cat:
             cat.label = new_label
             cat.save()
@@ -502,3 +505,19 @@ class ExpenseService:
             "data": result,
         }
         return content
+    
+    
+    @staticmethod
+    async def alter_cat(alter_request):
+        expense_id = alter_request.get("expense_id")
+        new_cat_id = alter_request.get("new_cat_id")
+        
+        expense = Expense.objects(id=expense_id).first()
+        new_cat = Cat.objects(id=new_cat_id).first()
+        new_cat_name = new_cat.label
+        
+        if expense:
+            expense.cat = new_cat_name
+            expense.save()
+        return {"message":"categories updated"}
+    

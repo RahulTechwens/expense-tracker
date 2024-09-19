@@ -27,7 +27,7 @@ async def filter_sms(
 
 # @router.put("/expense/{}")
 
-@router.post("/custom-cat/add")
+@router.post("/cat/add")
 async def add_cat( request: Request):
     return await ExpenseController.create_custom_cat(request)
 
@@ -54,3 +54,7 @@ async def graph_wise_expense(request: Request):
 @router.post("/graph/categories")
 async def graph_wise_categories(request: Request):
     return await ExpenseController.graph_wise_categories(request)
+
+@router.put("/alter-cat")
+async def alter_cat( request: Request):
+    return await ExpenseController.alter_cat(request)
