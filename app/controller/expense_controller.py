@@ -33,11 +33,6 @@ class ExpenseController:
             raise HTTPException(status_code=500, detail=str(e))
 
     async def cat_filter(cat, start_date, end_date, group_by):
-
-
-
-
-
         try:
             cat = cat.split(",") if cat else []
             start_date = start_date or None

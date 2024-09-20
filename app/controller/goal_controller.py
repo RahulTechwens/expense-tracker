@@ -39,9 +39,9 @@ class GoalsController:
             raise HTTPException(status_code=500, detail=str(e))
 
             
-    async def return_goals():
+    async def return_goals(goal_id):
         try:
-            result = await GoalsService.all_goals()
+            result = await GoalsService.all_goals(goal_id)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 
