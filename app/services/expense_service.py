@@ -188,11 +188,11 @@ class ExpenseService:
                 result = list(grouped_by_merchant.values())
 
             # Return result
-            # content ={
-            #         "message": "All Data Fetched Successfully",
-            #         "data": result,
-            #     }
-            return result
+            content ={
+                    "message": "All Data Fetched Successfully",
+                    "data": result,
+                }
+            return content
 
         else:
             data = Expense.objects()
