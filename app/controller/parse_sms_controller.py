@@ -62,6 +62,8 @@ class ParseSmsController:
         merchant_slug = re.sub(r'[^\w_]', '', merchant_name)
         return merchant_slug
 
+
+
     @staticmethod
     def get_parsed_sms(parsed_bank_name: list, message: str, parsed_text: str):
         if any(
@@ -70,13 +72,36 @@ class ParseSmsController:
             regex_for_sms_parsing = r"(?:Acct|A\/c|Account|A\/C|A\/C|a\/c|a\/C)[*\s]*(\w+)\s*(?:is|has been)?\s*(credited|debited|CREDITED|DEBITED)\s*(?:with)?\s*(?:INR|Rs\.?)\s*([\d,]+\.\d{2})(?:.*?(?:Team|UPI:.*?-))?\s*([\w\s]+(?:Bank|BANK|bank))"
             parsed_msg = re.search(regex_for_sms_parsing, message, re.IGNORECASE)
             if parsed_msg:
-                return dict(
-                    account_number=parsed_msg.group(1),
-                    type=parsed_msg.group(2),
-                    amount=parsed_msg.group(3),
+                # return dict(
+                #     account_number=parsed_msg.group(1),
+                #     type=parsed_msg.group(2),
+                #     amount=parsed_msg.group(3),
+                # )
+                account_number = parsed_msg.group(1)
+                type=parsed_msg.group(2),
+                amount=parsed_msg.group(3),
+                
+                expense = Expense(
+                    cat=parsed_text,
+                    merchant="",
+                    acct="",
+                    bank="",
+                    date="",
+                    amount=1,
+                    type="",
+                    method = "N/A",
+                    manual= False,
                 )
+
+                expense.save()  # Await the save operation if you're in an async context
+                return str(expense.id)
+                
+                
             else:
                 return {"error": "Failed to parse SMS details"}
+            
+            
+            
         elif any(bank in parsed_bank_name for bank in [" From HDFC Bank"]):
             regex_for_hdfc = r"Amt\s(Sent|Received)\sRs\.(\d+\.?\d*)\sFrom\s([A-Z\s]+)\sBank\sA\/C\s\*([0-9]{4})\sTo\s([A-Za-z-]+)"
 
@@ -94,6 +119,9 @@ class ParseSmsController:
                 )
             else:
                 return {"error": "Failed to parse SMS details"}
+            
+            
+            
         elif any(bank in parsed_bank_name for bank in [" Indian Bank", "Indian Bank"]):
             regex_for_indian_bank = r"A\/c \*([0-9]{4})\s(debited|credited)\sRs\.\s([\d,]+(?:\.\d{2})?)\s+on\s(\d{2}-\d{2}-\d{2})\s+to\s([A-Za-z\-]+)\."
             regex_for_indian_bank_1 = r"Rs\.(\d+\.\d+) (credited|debited) to a\/c \*(\d+) on (\d{2}\/\d{2}\/\d{4}) by a\/c linked to VPA (\S+) \(UPI Ref no \d+\)\. Dial \d+ for Cyber Fraud -Indian Bank"
