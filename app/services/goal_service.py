@@ -114,13 +114,13 @@ class GoalsService:
             savings_by_month[entry_month] += savings.entry_amount
             
 
-            result_savings = []
-            for i in range(6, -1, -1):
-                month = (today - timedelta(days=i * 30)).strftime('%m')
-                result_savings.append({
-                    "entry_amount": savings_by_month.get(month, 0.0),
-                    "month": int(month)
-                })
+        result_savings = []
+        for i in range(6, -1, -1):
+            month = (today - timedelta(days=i * 30)).strftime('%m')
+            result_savings.append({
+                "entry_amount": savings_by_month.get(month, 0.0),
+                "month": int(month)
+        })
         
         return result_savings
     
