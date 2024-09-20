@@ -17,8 +17,8 @@ async def add_goals(request: Request):
     return await GoalsController.add_goals(request)
 
 @router.delete("/goals/delete")
-async def delete_goals(goal_ids:str = Query(...)):
-    return await GoalsController.delete_goals(goal_ids)
+async def delete_goals(goal_id:str = Query(...)):
+    return await GoalsController.delete_goals(goal_id)
 
 @router.put("/goals/{goal_id}")
 async def achieve_goals(goal_id, request: Request):
