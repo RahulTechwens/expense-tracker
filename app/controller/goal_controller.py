@@ -93,7 +93,7 @@ class GoalsController:
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 
-                    {"message": "Savings entries fetched succesfully", "data": result}
+                    {"message": "Goal acheived successfully", "data": result}
                 )
             )
         except Exception as e:

@@ -89,7 +89,7 @@ class ExpenseController:
 
         return ResponseServiceHelper.success_helper(
             200,
-            result
+            {"message": "All data fetched successfully", "data": result}
         )
 
     async def graph_wise_expense(request: Request):
