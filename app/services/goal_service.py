@@ -1,7 +1,8 @@
 from app.models.goal_model import Goal, Savings
 from mongoengine import DoesNotExist
 from bson import ObjectId # type: ignore
-
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 class GoalsService:
 
@@ -99,15 +100,28 @@ class GoalsService:
         return str(savings.id)
 
     async def return_savings(goal_id):
-        savings_entries = Savings.objects(parent_goal_id=goal_id)
-        
-        result_savings = []
+        today = datetime.today()
+        end_date = today.strftime('%Y-%m-%d')
+
+        savings_entries = Savings.objects(
+            parent_goal_id=goal_id,
+            entry_date__gte=end_date,
+        )
+
+        savings_by_month = defaultdict(float)
         for savings in savings_entries:
-            savings_dict = savings.to_mongo().to_dict() 
-            savings_dict["_id"] = str(savings_dict["_id"])
-            savings_dict["parent_goal_id"] = str(savings_dict["parent_goal_id"])
-            result_savings.append(savings_dict)
+            # Ensure entry_date is a datetime object
+            entry_date = savings.entry_date if isinstance(savings.entry_date, datetime) else datetime.strptime(savings.entry_date, '%Y-%m-%d')
+            entry_month = entry_date.strftime('%m')
+            savings_by_month[entry_month] += savings.entry_amount
 
+        result_savings = []
+        for i in range(6, -1, -1):
+            month = (today - timedelta(days=i * 30)).strftime('%m')
+            result_savings.append({
+                "entry_amount": savings_by_month.get(month, 0.0),
+                "month": int(month)-1
+            })
+        
         return result_savings
-
         

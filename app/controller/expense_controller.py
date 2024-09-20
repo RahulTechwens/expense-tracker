@@ -1,5 +1,5 @@
-from fastapi.responses import JSONResponse  # type: ignore
-from fastapi import HTTPException, APIRouter, Query, Request  # type: ignore
+from fastapi.responses import JSONResponse
+from fastapi import HTTPException, Request
 from app.services.expense_service import ExpenseService
 from ..helper.response_helper import ResponseServiceHelper 
 
@@ -8,7 +8,7 @@ class ExpenseController:
     async def create_expense(request: Request):
         try:
             request_data = await request.json()
-            result = await ExpenseService.insert_expense(request_data)
+            await ExpenseService.insert_expense(request_data)
             response_data = {"status": "success", "result": request_data}
             return JSONResponse(
                 status_code=200,
@@ -24,10 +24,12 @@ class ExpenseController:
         try:
             request_data = await request.json()
             result = await ExpenseService.insert_custom_cat(request_data)
-            response_data = {"status": "success", "result": request_data}
             return JSONResponse(
                 status_code=200,
-                content={"message": "Expense recorded successfully", "data": result},
+                content={
+                    "message": "Expense recorded successfully",
+                    "data": result
+                },
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -39,7 +41,6 @@ class ExpenseController:
             end_date = end_date or None
             group_by = group_by or None
             result = await ExpenseService.filter_sms_category(cat, start_date, end_date,group_by)
-
             return ResponseServiceHelper.success_helper(
                 200,
                 result
@@ -64,7 +65,7 @@ class ExpenseController:
     async def expense_gpt(request: Request):
         try:
             request_data = await request.json()
-            result = await ExpenseService.expense_gpt_msg(request_data)
+            await ExpenseService.expense_gpt_msg(request_data)
             response_data = {"status": "success", "Message": request_data}
             return JSONResponse(
                 status_code=200,
