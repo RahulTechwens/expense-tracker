@@ -6,8 +6,11 @@ from app.controller.goal_controller import GoalsController
 router = APIRouter()
 
 @router.get("/goals")
-async def return_goals():
-    return await GoalsController.return_goals()
+async def return_goals(
+    request: Request,
+    goal_id: Optional[str] = Query(None, alias="goal_id"),
+):
+    return await GoalsController.return_goals(goal_id)
 
 @router.post("/goals/add")
 async def add_goals(request: Request):
