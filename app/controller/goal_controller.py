@@ -28,12 +28,20 @@ class GoalsController:
     async def delete_goals(goal_id):
         try:
             result = await GoalsService.delete_goals(goal_id)
-            return JSONResponse(
-                ResponseServiceHelper.success_helper(
-                    200, 
-                    {"message": "Goal deleted successfully", "data": result}
+            if result == True:
+                return JSONResponse(
+                    ResponseServiceHelper.success_helper(
+                        200, 
+                        {"message": "Goal deleted successfully", "data": result}
+                    )
                 )
-            )
+            else:
+                return JSONResponse(
+                    ResponseServiceHelper.success_helper(
+                        200, 
+                        {"message": "Goal not found", "data": result}
+                    )
+                )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 

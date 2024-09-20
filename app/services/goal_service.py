@@ -18,13 +18,12 @@ class GoalsService:
         return str(goal.id)
     
     async def delete_goals(goal_id):
-        return goal_id
-    
-        object_ids = [ObjectId(alert_id) for alert_id in alert_id]
-        alerts = Goal.objects(id__in=object_ids)
-
-        alerts.delete()
-        return True
+        goal = Goal.objects(id=ObjectId(goal_id)).first()
+        if goal:
+            goal.delete()
+            return True
+        else:
+            return False
     
 
     async def all_goals(goal_id):
