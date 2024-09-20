@@ -208,11 +208,11 @@ class ExpenseService:
                 result.append(item_dict)
 
 
-        # content = {
-        #         "message": "All Data Fetched Successfully",
-        #         "data": result,
-        #     }
-        return result
+        content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+        return content
 
     @staticmethod
     async def expense_gpt_msg(expense_request):
