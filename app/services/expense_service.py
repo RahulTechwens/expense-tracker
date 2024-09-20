@@ -188,11 +188,11 @@ class ExpenseService:
                 result = list(grouped_by_merchant.values())
 
             # Return result
-            content ={
-                    "message": "All Data Fetched Successfully",
-                    "data": result,
-                }
-            return content
+            # content ={
+            #         "message": "All Data Fetched Successfully",
+            #         "data": result,
+            #     }
+            return result
 
         else:
             data = Expense.objects()
@@ -208,11 +208,11 @@ class ExpenseService:
                 result.append(item_dict)
 
 
-        content = {
-                "message": "All Data Fetched Successfully",
-                "data": result,
-            }
-        return content
+        # content = {
+        #         "message": "All Data Fetched Successfully",
+        #         "data": result,
+        #     }
+        return result
 
     @staticmethod
     async def expense_gpt_msg(expense_request):
