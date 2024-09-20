@@ -104,6 +104,7 @@ class ExpenseService:
         if categories:
             data = Expense.objects(query)
             if data.count() == 0:
+                # return"yes"
                 return []
             for item in data:
                 item_dict = item.to_mongo().to_dict()
@@ -195,13 +196,18 @@ class ExpenseService:
 
         else:
             data = Expense.objects()
+            cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
 
             for item in data:
                 item_dict = item.to_mongo().to_dict()
                 item_dict["_id"] = str(item_dict["_id"])
+                
+                category = item_dict.get("cat")
+                item_dict["color_code"] = cat_color_codes.get(category, "#ffffff")
+
                 result.append(item_dict)
 
-        # Return result
+
         content = {
                 "message": "All Data Fetched Successfully",
                 "data": result,
@@ -499,12 +505,6 @@ class ExpenseService:
                 return content
     
     
-    
-    
-    
-    
-    
-    #################################################################################################################
     @staticmethod
     async def graph_category(request_data):
         category_id = request_data.get('cat_id')
