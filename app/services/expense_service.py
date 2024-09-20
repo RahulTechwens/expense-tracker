@@ -265,37 +265,33 @@ class ExpenseService:
 
                 # Create a dictionary mapping category labels to color codes
                 cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
-                
+
                 result = []
                 for item in data:
                     item_dict = item.to_mongo().to_dict()
                     item_dict["_id"] = str(item_dict["_id"])
                     
-                    # Get the category and append the color code
+                    # Get the category
                     category = item_dict.get("cat")
-                    item_dict["color_code"] = cat_color_codes.get(category, "#ffffff")  # Default to white if no color is found
-                    
-                    result.append(item_dict)
-
-                # Categorize the expenses by category
-                for item in result:
-                    category = item.get("cat")
-                    cat_obj = Cat.objects(Q(label=category)).first()
-                    cat_id = str(cat_obj.id) if cat_obj else None
                     
                     if category not in categorized_expenses:
+                        cat_obj = Cat.objects(Q(label=category)).first()
+                        cat_id = str(cat_obj.id) if cat_obj else None
+                        color_code = cat_color_codes.get(category, "#ffffff")  # Default to white if no color is found
+                        
                         categorized_expenses[category] = {
                             "headerName": category,
                             "cat_id": cat_id,
+                            "color_code": color_code,  # Add color code at the category level
                             "innerData": []
                         }
                     
-                    categorized_expenses[category]["innerData"].append(item)
-                
+                    # Append the item to the appropriate category
+                    categorized_expenses[category]["innerData"].append(item_dict)
+
                 # Convert the categorized dictionary to a list
                 result = list(categorized_expenses.values())
                 return result
-
 
             elif type == "merchant":
                 categorized_expenses = {}
@@ -358,86 +354,66 @@ class ExpenseService:
                 end_date = f"{current_year}-{month:02d}-{last_day:02d}"
                 query = Q(date__gte=start_date) & Q(date__lte=end_date)
 
-
                 if type == "category":
                     data = Expense.objects(query)
 
                     if data.count() == 0:
                         return []
 
-                    # Initialize the categorized expenses dictionary
                     categorized_expenses = {}
 
-                    # Step 1: Create a dictionary mapping category labels to color codes
                     cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
 
-                    # Step 2: Process each expense and categorize it
                     for item in data:
-                        item_dict = item.to_mongo().to_dict()  # Convert to dictionary
-                        item_dict["_id"] = str(item_dict["_id"])  # Convert `_id` to string
+                        item_dict = item.to_mongo().to_dict()  
+                        item_dict["_id"] = str(item_dict["_id"])  
                         
-                        # Get the category and fetch category details from Cat collection
                         category = item_dict.get("cat")
-                        cat_obj = Cat.objects(Q(label=category)).first()  # Fetch category object
-                        cat_id = str(cat_obj.id) if cat_obj else None  # Get cat_id if exists
+                        cat_obj = Cat.objects(Q(label=category)).first() 
+                        cat_id = str(cat_obj.id) if cat_obj else None  
                         
-                        # Get the color code for the category
-                        color_code = cat_color_codes.get(category, "#ffffff")  # Default to white if no color is found
+                        color_code = cat_color_codes.get(category, "#ffffff") 
                         
-                        # Step 3: Append the color code to the item
-                        item_dict["color_code"] = color_code
-                        
-                        # Step 4: Categorize the expense by its category
                         if category not in categorized_expenses:
                             categorized_expenses[category] = {
                                 "headerName": category,
                                 "cat_id": cat_id,
+                                "color_code": color_code,  
                                 "innerData": []
                             }
                         
-                        # Step 5: Append the current item to the corresponding category's innerData
                         categorized_expenses[category]["innerData"].append(item_dict)
 
-                    # Step 6: Convert the categorized dictionary to a list of categorized expenses
                     result = list(categorized_expenses.values())
                     return result
-
 
                 elif type == "merchant":
                     categorized_expenses = {}
                     data = Expense.objects(query)
 
-                    # Check if no expenses were found
                     if data.count() == 0:
                         return []
 
-                    # Create a dictionary mapping category labels to color codes
                     cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
 
-                    # Process each expense and categorize it by merchant
                     for item in data:
-                        item_dict = item.to_mongo().to_dict()  # Convert to dictionary
-                        item_dict["_id"] = str(item_dict["_id"])  # Convert `_id` to string
+                        item_dict = item.to_mongo().to_dict()  
+                        item_dict["_id"] = str(item_dict["_id"])  
 
-                        # Get the category and its corresponding color code
                         category = item_dict.get("cat")
-                        item_dict["color_code"] = cat_color_codes.get(category, "#ffffff")  # Default to white if no color is found
+                        item_dict["color_code"] = cat_color_codes.get(category, "#ffffff")  
 
-                        # Get the merchant
                         merchant = item_dict.get("merchant")
 
-                        # Categorize by merchant
                         if merchant not in categorized_expenses:
                             categorized_expenses[merchant] = {
                                 "headerName": merchant,
-                                "merchant_slug": item_dict.get("merchant_slug"),  # Use item_dict here
+                                "merchant_slug": item_dict.get("merchant_slug"),  
                                 "innerData": []
                             }
                         
-                        # Append the current item to the corresponding merchant's innerData
                         categorized_expenses[merchant]["innerData"].append(item_dict)
 
-                    # Convert the categorized dictionary to a list of categorized expenses
                     result = list(categorized_expenses.values())
                     return result
 
