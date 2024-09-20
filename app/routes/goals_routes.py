@@ -20,6 +20,10 @@ async def add_goals(request: Request):
 async def delete_goals(goal_ids:str = Query(...)):
     return await GoalsController.delete_goals(goal_ids)
 
+@router.put("/goals/{goal_id}")
+async def achieve_goals(goal_id, request: Request):
+    return await GoalsController.achieve_goals(goal_id,request)
+
 @router.post("/savings/add")
 async def add_savings(request: Request):
     return await GoalsController.add_savings(request)

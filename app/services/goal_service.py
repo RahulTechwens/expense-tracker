@@ -25,7 +25,6 @@ class GoalsService:
         alerts.delete()
         return True
     
-
     async def all_goals(goal_id):
         if goal_id:
             goal = Goal.objects(id=ObjectId(goal_id)).first()
@@ -69,13 +68,11 @@ class GoalsService:
                 if "_id" in goal_dict:
                     goal_dict["_id"] = str(goal_dict["_id"])
                 total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
-                goal_dict["amount_saved"] = total_savings
+                goal_dict["amount_saved"] = float(total_savings)
                 goal_dict["amount_saved_percentage"] = (total_savings / goal_dict.get('target_amount', 1)) * 100 
                 result_goals.append(goal_dict)
             
             return result_goals
-
-
 
     async def add_savings(entry_request):
         entry_amount = round(float(entry_request.get("entry_amount", 0.0)), 2)
@@ -122,4 +119,12 @@ class GoalsService:
             })
         
         return result_savings
-        
+    
+    async def acheive(goal_id, request_data):
+        goal =  Goal.objects(id=goal_id).first()
+        if not goal:
+            return {"message": "Goal not found"}
+        goal.status = request_data.get("status", goal.status)
+        goal.save()
+
+        return {"message": "Goal acheived successfully"}
