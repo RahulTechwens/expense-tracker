@@ -31,7 +31,25 @@ class GoalsService:
             if goal:
                 goal_dict = goal.to_mongo().to_dict()
                 goal_dict["_id"] = str(goal_dict["_id"])
-                return goal_dict
+                savings_entries = Savings.objects(parent_goal_id=str(goal_dict.get("_id")))
+                
+                result_savings = []
+                result_goals = []
+                
+                for savings in savings_entries:
+                    savings_dict = savings.to_mongo().to_dict()
+                    result_savings.append({
+                        'entry_amount': savings_dict.get('entry_amount')
+                    })
+                if "_id" in goal_dict:
+                    goal_dict["_id"] = str(goal_dict["_id"])
+                total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
+                goal_dict["amount_saved"] = total_savings
+                goal_dict["amount_saved_percentage"] = (total_savings / goal_dict.get('target_amount', 1)) * 100 
+                result_goals.append(goal_dict)
+                
+                
+                return result_goals
             else:
                 return []
         
