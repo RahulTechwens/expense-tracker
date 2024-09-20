@@ -47,9 +47,7 @@ class GoalsService:
                 total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
                 goal_dict["amount_saved"] = total_savings
                 goal_dict["amount_saved_percentage"] = (total_savings / goal_dict.get('target_amount', 1)) * 100 
-                # result_goals.append(goal_dict)
-                
-                
+
                 return goal_dict
             else:
                 return {}
