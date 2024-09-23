@@ -7,7 +7,7 @@ import re
 router = APIRouter()
 
 
-@router.post("/pasrse/sms")
+@router.post("/parse/sms")
 async def parsing_message(request: Request):
     return await ParseSmsController().parsing_sms(request)
 
