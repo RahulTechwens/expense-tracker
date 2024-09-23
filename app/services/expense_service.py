@@ -466,44 +466,59 @@ class ExpenseService:
 
             month = int(index) + 1
             current_year = datetime.now().year
-            start_date = f"{current_year}-{month:02d}-01"
+
+            # Calculate start and end dates for the current month
+            start_date = f"{current_year}-{month:02d}-01T00:00:00"
             _, last_day = monthrange(current_year, month)
-            end_date = f"{current_year}-{month:02d}-{last_day:02d}"
+            end_date = f"{current_year}-{month:02d}-{last_day:02d}T23:59:59"
 
+            # Calculate start and end dates for the previous month
             previous_month = int(index)
-            previous_start_date = f"{current_year}-{previous_month:02d}-01"
+            previous_start_date = f"{current_year}-{previous_month:02d}-01T00:00:00"
             _, last_day = monthrange(current_year, previous_month)
-            previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}"
+            previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}T23:59:59"
 
-            categories = Cat.objects()
-            total_expense = 0.0 
-            previous_total_expense = 0.0  
+            # categories = Cat.objects()
+            total_expense = 0.0
+            previous_total_expense = 0.0
+            expenses = Expense.objects(
+                Q(date__gte=start_date) & Q(date__lte=end_date)
+            ).order_by("-date")
+            # return expenses.to_json()
+            # Get distinct categories (unique) sorted by the latest date, and limit the result to 6
+            latest_categories = expenses.distinct("cat")[:6]
+            #return start_date
+            # Print or use the latest unique categories
+            return latest_categories
 
-            for category in categories:
-                label = category.label
-                
+            for category in latest_categories:
+                # label = category.label
+
                 expenses = Expense.objects(
-                    Q(cat=label) & Q(date__gte=start_date) & Q(date__lte=end_date)
+                    Q(cat=category) & Q(date__gte=start_date) & Q(date__lte=end_date)
                 )
+
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
-                
+
                 previous_day_expenses = Expense.objects(
-                    Q(cat=label) & Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date)
+                    Q(cat=category)
+                    & Q(date__gte=previous_start_date)
+                    & Q(date__lte=previous_end_date)
                 )
                 previous_total_amount = sum(
-                    float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses
+                    float(previous_day_expense.amount)
+                    for previous_day_expense in previous_day_expenses
                 )
                 previous_total_expense += previous_total_amount
-                
+
                 result.append(
                     {
-                        "category": label,
+                        "category": category,
                         "amount": round(float(total_amount), 2),
                         "previous_amount": round(float(previous_total_amount), 2),
                     }
                 )
-
 
             content = {
                 "message": "All Data Fetched Successfully",
@@ -532,8 +547,13 @@ class ExpenseService:
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
 
-                previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str))
-                previous_total_amount = sum(float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses)  # Cast to float
+                previous_day_expenses = Expense.objects(
+                    Q(cat=label) & Q(date=previous_date_str)
+                )
+                previous_total_amount = sum(
+                    float(previous_day_expense.amount)
+                    for previous_day_expense in previous_day_expenses
+                )  # Cast to float
                 previous_total_expense += previous_total_amount
 
                 result.append(

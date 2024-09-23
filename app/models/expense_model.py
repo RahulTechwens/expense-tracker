@@ -17,7 +17,8 @@ class Expense(Document):
     keywords = ListField(StringField(), default=[])
     vector = ListField(FloatField(), default=[])
     meta = {
-        'collection': 'demo_sms_data'
+        # 'collection': 'demo_sms_data'
+        'collection': 'expenses'
     }
     
     
