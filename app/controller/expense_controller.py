@@ -104,6 +104,7 @@ class ExpenseController:
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+        
     async def graph_wise_categories(request: Request):
         try:
             request_data = await request.json()
@@ -120,10 +121,7 @@ class ExpenseController:
     async def alter_cat(request: Request):
         try:
             request_data = await request.json()
-            # return request_data
             result = await ExpenseService.alter_cat(request_data)
-            # response_data = {"status": "success", "result": request_data}
-            # 
             return ResponseServiceHelper.success_helper(
                 200,
                 result
