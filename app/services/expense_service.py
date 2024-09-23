@@ -540,11 +540,11 @@ class ExpenseService:
                 )
 
         
-                content = {
-                    "message": "All Data Fetched Successfully",
-                    "data": result,
-                }
-                return content
+            content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+            return content
     
     
     @staticmethod
