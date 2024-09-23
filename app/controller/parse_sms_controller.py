@@ -58,11 +58,30 @@ class ParseSmsController:
                 return category
         return "Other"
     
+    @staticmethod
     def generate_slug(merchant_name):
         merchant_name = merchant_name.lower()
         merchant_name = re.sub(r'[\s\-]+', '_', merchant_name)
         merchant_slug = re.sub(r'[^\w_]', '', merchant_name)
         return merchant_slug
+    
+    @staticmethod
+    def insert_sms_data(cat,account_number,bank,current_date,amount,transaction_type):
+        expense = Expense(
+            cat=cat,
+            merchant="",
+            merchant_slug="",
+            acct=account_number,
+            bank=bank,
+            date=current_date,
+            amount=amount,
+            type=transaction_type,
+            method = "N/A",
+            manual= False,
+        )
+
+        expense.save()  
+        return str(expense.id)
 
 
 
