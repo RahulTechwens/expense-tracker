@@ -85,3 +85,16 @@ class GoalsController:
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+        
+    async def achieve_goals(goal_id, request):
+        try:
+            request_data = await request.json()
+            result = await GoalsService.acheive(goal_id, request_data)
+            return JSONResponse(
+                ResponseServiceHelper.success_helper(
+                    200, 
+                    {"message": "Goal acheived successfully", "data": result}
+                )
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))

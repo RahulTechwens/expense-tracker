@@ -438,15 +438,14 @@ class ExpenseService:
                         result.append(item_dict)
                      
             except ValueError:
-                # Handle case where index cannot be converted to an integer
                 return {"error": "Invalid index value"}
 
-        # Return result
-        content = {
-            "message": "All Data Fetched Successfully",
-            "data": result,
-        }
-        return content
+        # # Return result
+        # content = {
+        #     "message": "All Data Fetched Successfully",
+        #     "data": result,
+        # }
+        return result
 
     
     @staticmethod

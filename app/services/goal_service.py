@@ -26,7 +26,6 @@ class GoalsService:
         else:
             return False
     
-
     async def all_goals(goal_id):
         if goal_id:
             goal = Goal.objects(id=ObjectId(goal_id)).first()
@@ -70,13 +69,11 @@ class GoalsService:
                 if "_id" in goal_dict:
                     goal_dict["_id"] = str(goal_dict["_id"])
                 total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
-                goal_dict["amount_saved"] = total_savings
+                goal_dict["amount_saved"] = float(total_savings)
                 goal_dict["amount_saved_percentage"] = (total_savings / goal_dict.get('target_amount', 1)) * 100 
                 result_goals.append(goal_dict)
             
             return result_goals
-
-
 
     async def add_savings(entry_request):
         entry_amount = round(float(entry_request.get("entry_amount", 0.0)), 2)
@@ -100,27 +97,38 @@ class GoalsService:
 
     async def return_savings(goal_id):
         today = datetime.today()
+        six_months_ago = today - timedelta(days=6 * 30)
+        # end_date = today.strftime('%Y-%m-%d')
+        # Define the date range as strings in YYYY-MM-DD format
+        start_date = six_months_ago.strftime('%Y-%m-%d')
         end_date = today.strftime('%Y-%m-%d')
-
         savings_entries = Savings.objects(
             parent_goal_id=goal_id,
-            entry_date__gte=end_date,
+            entry_date__gte=start_date,
+            entry_date__lte=end_date
         )
-
         savings_by_month = defaultdict(float)
         for savings in savings_entries:
-            # Ensure entry_date is a datetime object
             entry_date = savings.entry_date if isinstance(savings.entry_date, datetime) else datetime.strptime(savings.entry_date, '%Y-%m-%d')
             entry_month = entry_date.strftime('%m')
             savings_by_month[entry_month] += savings.entry_amount
+            
 
         result_savings = []
         for i in range(6, -1, -1):
             month = (today - timedelta(days=i * 30)).strftime('%m')
             result_savings.append({
                 "entry_amount": savings_by_month.get(month, 0.0),
-                "month": int(month)-1
-            })
+                "month": int(month)
+        })
         
         return result_savings
-        
+    
+    async def acheive(goal_id, request_data):
+        goal =  Goal.objects(id=goal_id).first()
+        if not goal:
+            return {"message": "Goal not found"}
+        goal.status = request_data.get("status", goal.status)
+        goal.save()
+
+        return {"message": "Goal acheived successfully"}
