@@ -56,11 +56,30 @@ class ParseSmsController:
                 return category
         return "Other"
     
+    @staticmethod
     def generate_slug(merchant_name):
         merchant_name = merchant_name.lower()
         merchant_name = re.sub(r'[\s\-]+', '_', merchant_name)
         merchant_slug = re.sub(r'[^\w_]', '', merchant_name)
         return merchant_slug
+    
+    @staticmethod
+    def insert_sms_data(cat,account_number,bank,current_date,amount,transaction_type):
+        expense = Expense(
+            cat=cat,
+            merchant="",
+            merchant_slug="",
+            acct=account_number,
+            bank=bank,
+            date=current_date,
+            amount=amount,
+            type=transaction_type,
+            method = "N/A",
+            manual= False,
+        )
+
+        expense.save()  
+        return str(expense.id)
 
 
 
@@ -78,24 +97,16 @@ class ParseSmsController:
                 #     amount=parsed_msg.group(3),
                 # )
                 account_number = parsed_msg.group(1)
-                type=parsed_msg.group(2),
-                amount=parsed_msg.group(3),
+                transaction_type=parsed_msg.group(2)
+                amount=parsed_msg.group(3)
+                bank = parsed_msg.group(4)
+                '''Dont use comma after lines then it'll be declared as tuple'''
+                current_date = datetime.now().strftime("%Y-%m-%d")
                 
-                expense = Expense(
-                    cat=parsed_text,
-                    merchant="",
-                    acct="",
-                    bank="",
-                    date="",
-                    amount=1,
-                    type="",
-                    method = "N/A",
-                    manual= False,
-                )
-
-                expense.save()  # Await the save operation if you're in an async context
-                return str(expense.id)
-                
+                inserted_id = ParseSmsController.insert_sms_data(parsed_text,account_number,bank,current_date,amount,transaction_type)
+                return {
+                    "id": inserted_id
+                }
                 
             else:
                 return {"error": "Failed to parse SMS details"}
@@ -108,15 +119,31 @@ class ParseSmsController:
             parsed_msg = re.search(regex_for_hdfc, message, re.IGNORECASE)
 
             if parsed_msg:
-                return dict(
-                    transaction_type=(
-                        "credit" if parsed_msg.group(1) == "Sent" else "debit"
-                    ),
-                    amount=parsed_msg.group(2),
-                    bank=parsed_msg.group(3),
-                    account_number=parsed_msg.group(4),
-                    recipient=parsed_msg.group(5),
-                )
+                # return dict(
+                #     transaction_type=(
+                #         "credit" if parsed_msg.group(1) == "Sent" else "debit"
+                #     ),
+                #     amount=parsed_msg.group(2),
+                #     bank=parsed_msg.group(3),
+                #     account_number=parsed_msg.group(4),
+                #     recipient=parsed_msg.group(5),
+                # )
+                transaction_type=(
+                        "CREDIT" if parsed_msg.group(1) == "Sent" else "DEBIT"
+                    )
+                account_number=parsed_msg.group(4)
+                bank=parsed_msg.group(3)
+                current_date = datetime.now().strftime("%Y-%m-%d")
+                amount=parsed_msg.group(2)
+                
+                # return transaction_type
+            
+            
+                inserted_id = ParseSmsController.insert_sms_data(parsed_text,account_number,bank,current_date,amount,transaction_type)
+                return {
+                    "id": inserted_id
+                }
+                
             else:
                 return {"error": "Failed to parse SMS details"}
             
@@ -128,25 +155,53 @@ class ParseSmsController:
 
             parsed_msg = re.search(regex_for_indian_bank, message, re.IGNORECASE)
             if parsed_msg:
-                return dict(
-                    account_number=parsed_msg.group(1),
-                    transaction_type=parsed_msg.group(2),
-                    amount=parsed_msg.group(3),
-                    date=parsed_msg.group(4),
-                    recipient=parsed_msg.group(5),
-                )
+                # return dict(
+                #     account_number=parsed_msg.group(1),
+                #     transaction_type=parsed_msg.group(2),
+                #     amount=parsed_msg.group(3),
+                #     date=parsed_msg.group(4),
+                #     recipient=parsed_msg.group(5),
+                # )
+                
+                account_number=parsed_msg.group(1)
+                transaction_type=parsed_msg.group(2)
+                bank = "Indian Bank"
+                current_date = datetime.now().strftime("%Y-%m-%d")
+                amount=parsed_msg.group(3)
+                transaction_type=parsed_msg.group(2)
+                
+                inserted_id = ParseSmsController.insert_sms_data(parsed_text,account_number,bank,current_date,amount,transaction_type)
+                return {
+                    "id": inserted_id
+                }
 
             parsed_msg = re.search(regex_for_indian_bank_1, message, re.IGNORECASE)
             if parsed_msg:
-                return dict(
-                    account_number=parsed_msg.group(1),
-                    transaction_type=parsed_msg.group(2),
-                    amount=parsed_msg.group(3),
-                    date=parsed_msg.group(4),
-                    recipient=parsed_msg.group(5),
-                )
-
-            return {"error": "Failed to parse SMS details"}
+                # return dict(
+                #     account_number=parsed_msg.group(1),
+                #     transaction_type=parsed_msg.group(2),
+                #     amount=parsed_msg.group(3),
+                #     date=parsed_msg.group(4),
+                #     recipient=parsed_msg.group(5),
+                # )
+                
+                account_number=parsed_msg.group(1)
+                transaction_type=parsed_msg.group(2)
+                bank = "Indian Bank"
+                current_date = datetime.now().strftime("%Y-%m-%d")
+                amount=parsed_msg.group(3)
+                transaction_type=parsed_msg.group(2)
+                
+                
+                
+                inserted_id = ParseSmsController.insert_sms_data(parsed_text,account_number,bank,current_date,amount,transaction_type)
+                return {
+                    "id": inserted_id
+                }
+            else:
+                return {"error": "Failed to parse SMS details"}
+            
+            
         elif any(bank in parsed_bank_name for bank in [" Canara Bank", "Canara Bank"]):
             regex_for_canara = {
                 "transaction_type": r"(\bCREDITED\b|\bDEBITED\b)",
@@ -161,15 +216,19 @@ class ParseSmsController:
                 if match:
                     extracted_info[key] = match.group(1).strip()
 
-            # if parsed_msg:
-            return extracted_info
+            account_number = extracted_info["account_number"]
+            amount = extracted_info["amount"]
+            transaction_type = extracted_info["transaction_type"]
+            bank = extracted_info["bank"]
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            
         
+            inserted_id = ParseSmsController.insert_sms_data(parsed_text,account_number,bank,current_date,amount,transaction_type)
+            return {
+                "id": inserted_id
+            }
         
-        
-        
-        
-        
-        
+
         
         elif any(bank in parsed_bank_name for bank in [" Axis Bank", "Axis Bank"]):
             regex_for_axis = {
@@ -187,32 +246,20 @@ class ParseSmsController:
                     extracted_info[key] = match.group(1).strip()
                     
                     
-            expense = Expense(
-                cat=parsed_text,
-                merchant=extracted_info.get("recipient", "N/A"),
-                acct=extracted_info["account_number"],
-                bank=extracted_info["bank"],
-                date=extracted_info["date_time"],
-                amount=float(extracted_info["amount"]),
-                type=extracted_info["transaction_type"],
-                method = "N/A",
-                manual= False,
-            )
+
+            account_number = extracted_info["account_number"]
+            amount = extracted_info["amount"]
+            transaction_type = extracted_info["transaction_type"]
+            bank = extracted_info["bank"]
+            current_date = datetime.now().strftime("%Y-%m-%d")
             
-            
+        
+            inserted_id = ParseSmsController.insert_sms_data(parsed_text,account_number,bank,current_date,amount,transaction_type)
+            return {
+                "id": inserted_id
+            }
 
-            expense.save()  # Await the save operation if you're in an async context
-            return str(expense.id)
-
-            # if parsed_msg:
-            # return extracted_info
-
-
-
-
-
-
-
+        # Not finished
         elif any(
             bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]
         ):
