@@ -9,26 +9,26 @@ from app.helper.otp_helper import OtpHelper
 
 router = APIRouter()
 
-# # Dependency to check token
-# def verify_token(request: Request):
-#     token = request.headers.get('Authorization')
-#     if not token or not token.startswith("Bearer "):
-#         raise HTTPException(status_code=401, detail="Invalid or missing token")
+# Dependency to check token
+def verify_token(request: Request):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid or missing token")
 
-#     token = token.split(" ")[1] 
-#     check_token = OtpHelper.is_token_valid(token)
-#     return check_token
+    token = token.split(" ")[1] 
+    check_token = OtpHelper.is_token_valid(token)
+    return check_token
 
 
 
 @router.post("/set/alert")
-async def set_alerts(request: Request):
-    return await AlertController.set_alert(request)
+async def set_alerts(request: Request,user: str = Depends(verify_token)):
+    return await AlertController.set_alert(request, user)
 
 
 @router.get("/alerts")
-async def alerts():
-    return await AlertController.get_alerts()
+async def alerts(user: str = Depends(verify_token)):
+    return await AlertController.get_alerts(user)
 
 
 
@@ -37,17 +37,18 @@ async def alerts():
 async def toggle_status(
     request: ToggleStatusRequest,
     alert_id: str = Path(..., description="The ID of the alert to update"),
+    user: str = Depends(verify_token)
 ):
     status = request.active
 
-    return await AlertController.toggle_status(alert_id, status)
+    return await AlertController.toggle_status(alert_id, status, user)
 
 @router.delete("/alerts")
-async def delete_alerts(alert_ids:str = Query(...)):
-    return await AlertController.delete_alert(alert_ids)
+async def delete_alerts(alert_ids:str = Query(...), user: str = Depends(verify_token)):
+    return await AlertController.delete_alert(alert_ids, user)
 
 @router.put("/alert/{alert_id}")
-async def update_alert(alert_id: str, request: Request):
-    return await AlertController.update_alert(alert_id, request)
+async def update_alert(alert_id: str, request: Request, user: str = Depends(verify_token)):
+    return await AlertController.update_alert(alert_id, request, user)
 
 

@@ -16,6 +16,7 @@ class Expense(Document):
     manual = BooleanField(required=True)
     keywords = ListField(StringField(), default=[])
     vector = ListField(FloatField(), default=[])
+    user_phone= StringField(required=False)
     meta = {
         'collection': 'demo_sms_data'
     }
