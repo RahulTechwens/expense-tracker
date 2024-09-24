@@ -27,8 +27,9 @@ class AlertController:
             raise HTTPException(status_code=500, detail=str(e))
 
 
-    async def get_alerts():
+    async def get_alerts(user_id):
         try:
+            print(user_id)
             result = await AlertService.all_alerts()
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
