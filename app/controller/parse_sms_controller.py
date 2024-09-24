@@ -279,4 +279,20 @@ class ParseSmsController:
                 if match:
                     extracted_info[key] = match.group(1).strip()
             return extracted_info
-        return None
+        # return None
+    
+        else:
+            expense = Expense(
+                cat="",
+                merchant="",
+                acct="",
+                bank="",
+                date="",
+                amount="",
+                type="",
+                method = "",
+                manual= "",
+            )
+            expense.save()
+            return str(expense.id)
+        
