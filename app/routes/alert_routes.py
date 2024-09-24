@@ -1,12 +1,24 @@
-from fastapi import APIRouter, Request  # type: ignore
+from fastapi import APIRouter, Request, Depends
 from app.controller.alert_controller import AlertController
 from fastapi import FastAPI, HTTPException, Query, Request
 from bson import ObjectId
 from fastapi import FastAPI, HTTPException, Path
 from pydantic import BaseModel
 from app.models.alert_model import ToggleStatusRequest
+from app.helper.otp_helper import OtpHelper
 
 router = APIRouter()
+
+# # Dependency to check token
+# def verify_token(request: Request):
+#     token = request.headers.get('Authorization')
+#     if not token or not token.startswith("Bearer "):
+#         raise HTTPException(status_code=401, detail="Invalid or missing token")
+
+#     token = token.split(" ")[1] 
+#     check_token = OtpHelper.is_token_valid(token)
+#     return check_token
+
 
 
 @router.post("/set/alert")
