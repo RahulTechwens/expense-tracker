@@ -17,7 +17,8 @@ from bson.objectid import ObjectId
 class ExpenseService:
 
     @staticmethod
-    async def insert_expense(expense_request):
+    async def insert_expense(expense_request, user):
+        print(user['phone'])
         def generate_slug(merchant_name):
             merchant_name = merchant_name.lower()
             merchant_name = re.sub(r"[\s\-]+", "_", merchant_name)
@@ -43,6 +44,7 @@ class ExpenseService:
                 manual=expense_request.get("manual"),
                 keywords=expense_request.get("keywords"),
                 vector=expense_request.get("vector"),
+                user_phone = user["phone"]
             )
             expense.save()
             return str(expense.id)
@@ -89,17 +91,17 @@ class ExpenseService:
 
     @staticmethod
     async def filter_sms_category(
-        category_ids: List[str], start_date, end_date, group_by
+        category_ids: List[str], start_date, end_date, group_by, user
     ):
         query = Q()
         if ObjectId.is_valid(category_ids[0]):  # will be resolving later
             cats = Cat.objects(id__in=category_ids).only("label")
             cat_dict = {str(cat.id): cat.label for cat in cats}
             categories = [cat_dict.get(cat_id, "Unknown") for cat_id in category_ids]
-            query &= Q(cat__in=categories)
+            query &= Q(cat__in=categories, user_phone=user['phone'])
         else:
             categories = category_ids
-            query &= Q(merchant_slug__in=category_ids)
+            query &= Q(merchant_slug__in=category_ids, user_phone=user['phone'])
         result = []
         print(categories, query)
         if categories:
@@ -244,7 +246,7 @@ class ExpenseService:
         return new_label
 
     @staticmethod
-    async def time_wise_expense(request_data):
+    async def time_wise_expense(request_data, user):
         time_type = request_data.get("time_type")
         index = request_data.get("index")
         type = request_data.get("type")
@@ -252,7 +254,7 @@ class ExpenseService:
         result = []
 
         if time_type == "daily":
-            query &= Q(date=index)
+            query &= Q(date=index, user_phone=user['phone'])
 
             if type == "category":
                 categorized_expenses = {}
@@ -458,7 +460,7 @@ class ExpenseService:
         return result
 
     @staticmethod
-    async def graph_filter(request_data):
+    async def graph_filter(request_data, user):
         time_type = request_data.get("time_type")
         if time_type == "monthly":
             index = request_data.get("index")
@@ -483,13 +485,13 @@ class ExpenseService:
                 label = category.label
                 
                 expenses = Expense.objects(
-                    Q(cat=label) & Q(date__gte=start_date) & Q(date__lte=end_date)
+                    Q(cat=label, user_phone=user['phone']) & Q(date__gte=start_date) & Q(date__lte=end_date) 
                 )
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
                 
                 previous_day_expenses = Expense.objects(
-                    Q(cat=label) & Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date)
+                    Q(cat=label,  user_phone=user['phone']) & Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date)
                 )
                 previous_total_amount = sum(
                     float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses
@@ -528,11 +530,11 @@ class ExpenseService:
             for category in categories:
                 label = category.label
 
-                expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str))
+                expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str) & Q( user_phone=user['phone']))
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
 
-                previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str))
+                previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str) & Q( user_phone=user['phone']))
                 previous_total_amount = sum(float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses)  # Cast to float
                 previous_total_expense += previous_total_amount
 
@@ -550,15 +552,15 @@ class ExpenseService:
             return content
 
     @staticmethod
-    async def graph_category(request_data):
+    async def graph_category(request_data, user):
         category_id = request_data.get("cat_id")
         query = Q()
         if ObjectId.is_valid(category_id):
             cats = Cat.objects(id=category_id).only("label")
             cat_dict = {"label": cat.label for cat in cats}
-            query &= Q(cat=cat_dict.get("label"))
+            query &= Q(cat=cat_dict.get("label"), user_phone=user['phone'])
         else:
-            query &= Q(merchant_slug=category_id)
+            query &= Q(merchant_slug=category_id, user_phone=user['phone'])
 
         today = datetime.now()
         start_date = today - timedelta(days=180)

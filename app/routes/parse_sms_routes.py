@@ -1,15 +1,26 @@
-from fastapi import APIRouter, Request  # type: ignore
+# from fastapi import APIRouter, Request  # type: ignore
 from app.controller.parse_sms_controller import ParseSmsController
 from fastapi import Request # type: ignore 
 import re
+from fastapi import APIRouter, Request, Depends
+from fastapi import FastAPI, HTTPException, Query, Request
+from app.helper.otp_helper import OtpHelper
 
 
 router = APIRouter()
+# Dependency to check token
+def verify_token(request: Request):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid or missing token")
 
+    token = token.split(" ")[1] 
+    check_token = OtpHelper.is_token_valid(token)
+    return check_token
 
 @router.post("/parse/sms")
-async def parsing_message(request: Request):
-    return await ParseSmsController().parsing_sms(request)
+async def parsing_message(request: Request, user: str = Depends(verify_token)):
+    return await ParseSmsController().parsing_sms(request, user)
 
 
 @router.get("/pasrse/sms/test")

@@ -1,5 +1,7 @@
 from app.models.expense_model import Expense
-from fastapi import APIRouter, Query, Request, Depends, HTTPException # type: ignore
+from fastapi import APIRouter, Request, Depends
+from fastapi import FastAPI, HTTPException, Query, Request
+# from fastapi import APIRouter, Query, Request, Depends, HTTPException # type: ignore
 from typing import Optional
 from app.controller.expense_controller import ExpenseController
 from app.helper.otp_helper import OtpHelper
@@ -18,12 +20,13 @@ def verify_token(request: Request):
     return check_token
 
 
+
 @router.get("/")
 async def read_root():
     return {"Welcome message": "Welcome to the Expense Tracker API development server"}
 
 @router.post("/expense/add")
-async def expense_detail( request: Request, user: str = (verify_token)):
+async def expense_detail( request: Request, user = Depends(verify_token)):
     return await ExpenseController.create_expense(request, user)
 
 @router.get("/expense")
@@ -33,7 +36,7 @@ async def filter_sms(
     start_date: Optional[str] = Query(None, alias="start_date"),
     end_date: Optional[str] = Query(None, alias="end_date"),
     group_by: Optional[str] = Query(None, alias="group_by"),
-    user: str = (verify_token)
+    user = Depends(verify_token)
     
     #  date: Optional[str] = Query(None)
 ):
@@ -58,17 +61,17 @@ async def expense_gpt_message(request: Request):
     return await ExpenseController.expense_gpt(request)
 
 @router.post("/expense/get")
-async def time_wise_expense(request: Request, user: str = (verify_token)):
+async def time_wise_expense(request: Request, user = Depends(verify_token)):
     return await ExpenseController.time_wise_expense(request, user)
 
 @router.post("/graph")
-async def graph_wise_expense(request: Request, user: str = (verify_token)):
+async def graph_wise_expense(request: Request, user = Depends(verify_token)):
     return await ExpenseController.graph_wise_expense(request, user)
 
 @router.post("/graph/categories")
-async def graph_wise_categories(request: Request, user: str = (verify_token)):
+async def graph_wise_categories(request: Request, user = Depends(verify_token)):
     return await ExpenseController.graph_wise_categories(request, user)
 
 @router.put("/alter-cat")
-async def alter_cat( request: Request, user: str = (verify_token)):
+async def alter_cat( request: Request, user = Depends(verify_token)):
     return await ExpenseController.alter_cat(request, user)

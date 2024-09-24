@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 SECRET_KEY = "expense"
 
 class OtpHelper:
-    OTP_EXPIRATION_TIME = 300
+    OTP_EXPIRATION_TIME = 10000
     @staticmethod
     def generate_token(phone):
         salt = secrets.token_hex(16)
