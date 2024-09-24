@@ -27,7 +27,7 @@ class ParseSmsController:
 
     regex_for_sms_parsing = r"(?:Acct|A\/c|Account|A\/C|A\/C|a\/c|a\/C)[*\s]*(\w+)\s*(?:is|has been)?\s*(credited|debited|CREDITED|DEBITED)\s*(?:with)?\s*(?:INR|Rs\.?)\s*([\d,]+\.\d{2})(?:.*?(?:Team|UPI:.*?-))?\s*([\w\s]+(?:Bank|BANK|bank))"
 
-    async def parsing_sms(self, request):
+    async def parsing_sms(self, request, user):
         try:
             request_data = await request.json()
             for item in request_data["message"]:
@@ -38,7 +38,7 @@ class ParseSmsController:
                 parsed_bank = re.findall(
                     self.pattern, item.get('sms_msg'), re.IGNORECASE
                 )
-                parsed_message = self.get_parsed_sms(parsed_bank, item.get('sms_msg'), parsed_text)
+                parsed_message = self.get_parsed_sms(parsed_bank, item.get('sms_msg'), parsed_text, user)
 
             return JSONResponse(
                 status_code=200,
@@ -66,7 +66,7 @@ class ParseSmsController:
         return merchant_slug
     
     @staticmethod
-    def insert_sms_data(cat,account_number,bank,current_date,amount,transaction_type):
+    def insert_sms_data(cat,account_number,bank,current_date,amount,transaction_type, user):
         expense = Expense(
             cat=cat,
             merchant="",
@@ -78,6 +78,7 @@ class ParseSmsController:
             type=transaction_type,
             method = "N/A",
             manual= False,
+            user_phone=user['phone']
         )
 
         expense.save()  
@@ -86,7 +87,7 @@ class ParseSmsController:
 
 
     @staticmethod
-    def get_parsed_sms(parsed_bank_name: list, message: str, parsed_text: str):
+    def get_parsed_sms(parsed_bank_name: list, message: str, parsed_text: str, user):
         today = datetime.today()
         formatted_date = today.strftime('%Y-%m-%d')
         if any(
@@ -111,6 +112,7 @@ class ParseSmsController:
                     type = type_msg[0] if type_msg else '',
                     method = "N/A",
                     manual= False,
+                    user_phone=user['phone']
                 )
                 
                 
@@ -145,6 +147,8 @@ class ParseSmsController:
                     type = transaction_type[0] if transaction_type[0] else '',
                     method = "",
                     manual= False,
+                    user_phone=user['phone']
+                    
                 )
                 expense.save()
                 return str(expense.id)
@@ -174,6 +178,8 @@ class ParseSmsController:
                     type = transaction_type if transaction_type else '',
                     method = "",
                     manual= False,
+                    user_phone=user['phone']
+                    
                 )
                 expense.save()
                 return str(expense.id)
@@ -230,7 +236,9 @@ class ParseSmsController:
                 method = "N/A",
                 manual= False,
                 keywords=[],
-                vector=[]
+                vector=[],
+                user_phone=user['phone']
+                
             )
             expense.save()
             return str(expense.id)
@@ -258,10 +266,45 @@ class ParseSmsController:
                 type=extracted_info["transaction_type"],
                 method = "N/A",
                 manual= False,
+                user_phone=user['phone']
+                
             )
             expense.save()
             return str(expense.id)
+        elif any(bank in parsed_bank_name for bank in ["ICICIBank"]):
+ 
+            regex_for_axis = {
+                "transaction_type": r"(credited|debited)",
+                "amount": r"Rs\s*([\d,]+\.\d{2})",
+                "account_number": r"Acct\s*([Xx*\d]+)",
+                "bank": r"([A-Za-z\s]+Bank)",  
+                "recipient": r"Info-\s(?:UPI|P2A|IMPS)/[\d]+/([A-Za-z\s]+)",
+            }
+ 
+            extracted_info = {}
+ 
+            for key, pattern in regex_for_axis.items():
+                match = re.search(pattern, message)
+                if match:
+                    extracted_info[key] = match.group(1).strip()
+ 
+            expense = Expense(
+                cat=parsed_text,
+                merchant=extracted_info.get("recipient", ""),
+                acct=extracted_info.get("account_number", ''),
+                bank=extracted_info.get("bank", ''),
+                date=formatted_date,
+                amount=float(extracted_info.get("amount", '0.00').replace(',', '')),
+                type=extracted_info.get("transaction_type", ''),  
+                method="",
+                manual=False,
+                user_phone=user['phone']
 
+            )
+ 
+            expense.save()
+ 
+            return str(expense.id)
         elif any(
             bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]
         ):
@@ -292,6 +335,8 @@ class ParseSmsController:
                 type="",
                 method = "",
                 manual= "",
+                user_phone=user['phone']
+                
             )
             expense.save()
             return str(expense.id)

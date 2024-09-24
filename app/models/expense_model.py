@@ -9,7 +9,7 @@ class Expense(Document):
     bank = StringField(required=True)
     date = StringField(required=True)
     # date = DateTimeField(default=datetime.datetime.time)
-    body = StringField()
+    body = StringField(required=False)
     amount = FloatField(required=True)
     type = StringField(required=True)
     method = StringField(required=True)
