@@ -1,8 +1,8 @@
-from fastapi.responses import JSONResponse  # type: ignore
-from fastapi import HTTPException # type: ignore
+from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 from ..services.alert_service import AlertService
 from ..helper.response_helper import ResponseServiceHelper 
-from bson import ObjectId # type: ignore
+from bson import ObjectId
 from app.models.alert_model import Alert
 
 class AlertController:
