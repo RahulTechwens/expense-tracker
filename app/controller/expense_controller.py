@@ -5,10 +5,10 @@ from ..helper.response_helper import ResponseServiceHelper
 
 
 class ExpenseController:
-    async def create_expense(request: Request):
+    async def create_expense(request: Request, user):
         try:
             request_data = await request.json()
-            await ExpenseService.insert_expense(request_data)
+            await ExpenseService.insert_expense(request_data, user)
             response_data = {"status": "success", "result": request_data}
             return JSONResponse(
                 status_code=200,

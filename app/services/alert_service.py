@@ -44,7 +44,7 @@ class AlertService:
 
     ]
 
-    async def insert_alert(self, dictData):
+    async def insert_alert(self, dictData, user):
         alert_type = dictData.get('alert_type').lower()
         alert_data_input = dictData.get('alert_data', [])
 
@@ -69,7 +69,8 @@ class AlertService:
             alert_data=alert_data,  # Now a list of dictionaries
             limit=dictData.get('limit'),
             cat_ids=dictData.get('cat_ids'),
-            status=dictData.get('status')
+            status=dictData.get('status'),
+            user_phone=user["phone"]
         )
         alert.save()
         return {"inserted_id": str(alert.id)}
@@ -88,8 +89,8 @@ class AlertService:
         
         return len(result_categories)
 
-    async def all_alerts():
-        alerts = Alert.objects.aggregate([
+    async def all_alerts(user):
+        alerts = Alert.objects(user_phone=user['phone']).aggregate([
             {
                 "$lookup": {
                     "from": "categories",
@@ -114,9 +115,9 @@ class AlertService:
         return result_alerts
 
 
-    async def toggle_alert_status(alert_id: str, status: bool):
+    async def toggle_alert_status(alert_id: str, status: bool, user):
         try:
-            alert = Alert.objects(id=alert_id).first()
+            alert = Alert.objects(id=alert_id, user_phone=user["phone"]).first()
             if not alert:
                 return {"message": "Alert not found"}
             alert.status = status
@@ -125,15 +126,15 @@ class AlertService:
         except Exception as e:
             return {"message": f"Error updating alert: {e}"}
         
-    async def delete_alert(alert_id: list):
+    async def delete_alert(alert_id: list, user):
         object_ids = [ObjectId(alert_id) for alert_id in alert_id]
-        alerts = Alert.objects(id__in=object_ids)
+        alerts = Alert.objects(id__in=object_ids, user_phone=user["phone"])
         # print(object_ids)
         alerts.delete()
         return True
     
-    async def update_alert(self, alert_id, dictData):
-        alert = Alert.objects(id=alert_id).first()
+    async def update_alert(self, alert_id, dictData, user):
+        alert = Alert.objects(id=alert_id, user_phone=user["phone"]).first()
         if not alert:
             return {"error": "Alert not found"}
         if dictData.get('alert_type').lower() == 'daily':
