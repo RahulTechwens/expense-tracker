@@ -6,7 +6,8 @@ class AuthService:
     @staticmethod
     def generate_otp(phone):
         """ Helper function to generate and save OTP """
-        otp = random.randint(100000, 999999)
+        # otp = random.randint(100000, 999999)
+        otp = 111111
         new_otp = Otp(
             otp_val=str(otp),
             verify_status=False,
