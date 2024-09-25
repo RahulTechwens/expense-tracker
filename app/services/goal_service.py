@@ -7,13 +7,14 @@ from collections import defaultdict
 class GoalsService:
 
     @staticmethod
-    async def add_goals(goal_request):
+    async def add_goals(goal_request, user):
         
         goal = Goal(
             title=goal_request.get("title"),
             description=goal_request.get("description"),
             target_date=goal_request.get("target_date"),
             target_amount=goal_request.get("target_amount"),
+            user_phone = user['phone']
         )
         goal.save()
         return str(goal.id)
@@ -26,9 +27,9 @@ class GoalsService:
         else:
             return False
     
-    async def all_goals(goal_id):
+    async def all_goals(goal_id, user):
         if goal_id:
-            goal = Goal.objects(id=ObjectId(goal_id)).first()
+            goal = Goal.objects(id=ObjectId(goal_id), user_phone=user['phone']).first()
             if goal:
                 goal_dict = goal.to_mongo().to_dict()
                 goal_dict["_id"] = str(goal_dict["_id"])
@@ -45,7 +46,7 @@ class GoalsService:
                 if "_id" in goal_dict:
                     goal_dict["_id"] = str(goal_dict["_id"])
                 total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
-                goal_dict["amount_saved"] = total_savings
+                goal_dict["amount_saved"] = float(total_savings)
                 goal_dict["amount_saved_percentage"] = (total_savings / goal_dict.get('target_amount', 1)) * 100 
 
                 return goal_dict
@@ -54,7 +55,7 @@ class GoalsService:
         
         
         else:
-            goals = Goal.objects()  
+            goals = Goal.objects(user_phone=user['phone'])  
             result_goals = []
             for goal in goals:
                 goal_dict = goal.to_mongo().to_dict()
@@ -75,27 +76,55 @@ class GoalsService:
             
             return result_goals
 
-    async def add_savings(entry_request):
+    async def add_savings(entry_request, user):
         entry_amount = round(float(entry_request.get("entry_amount", 0.0)), 2)
 
         parent_goal_id = entry_request.get("parent_goal_id")
-
-        try:
-            # Check if the parent goal exists
-            parent_goal = Goal.objects.get(id=parent_goal_id)
-        except DoesNotExist:
-            return {"error": "Parent goal not found"}
-
-        savings = Savings(
-            parent_goal_id=entry_request.get("parent_goal_id"),
-            entry_amount=entry_request.get("entry_amount"),
-            entry_date=entry_request.get("entry_date"),
-        )
-        savings.save()
+        goal = Goal.objects(id=ObjectId(parent_goal_id), user_phone=user['phone']).first()
+        target_amount = goal.target_amount
         
-        return str(savings.id)
+        goal_dict = goal.to_mongo().to_dict()
+        goal_dict["_id"] = str(goal_dict["_id"])
+        savings_entries = Savings.objects(parent_goal_id=str(goal_dict.get("_id")))
+        
+        result_savings = []
+        
+        for savings in savings_entries:
+            savings_dict = savings.to_mongo().to_dict()
+            result_savings.append({
+                'entry_amount': savings_dict.get('entry_amount')
+            })
+        if "_id" in goal_dict:
+            goal_dict["_id"] = str(goal_dict["_id"])
+        total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
+        
+        
+        reamining_amount = target_amount - total_savings
+    
+        if entry_amount > reamining_amount:
+            return "Entry amount is greater than remaining amount -> entry not allowed"
+        elif entry_amount == 0:
+            return "Entry amount is similar to zero -> entry not allowed"
+        else:
+            try:
+                # Check if the parent goal exists
+                parent_goal = Goal.objects.get(id=parent_goal_id,user_phone=user['phone'])
+                #return parent_goal.title
+            except DoesNotExist:
+                return {"error": "Parent goal not found"}
 
-    async def return_savings(goal_id):
+            savings = Savings(
+                parent_goal_id=entry_request.get("parent_goal_id"),
+                entry_amount=entry_request.get("entry_amount"),
+                entry_date=entry_request.get("entry_date"),
+                user_phone=user['phone']
+            )
+            savings.save()
+            
+            return str(savings.id)
+
+
+    async def return_savings(goal_id, user):
         today = datetime.today()
         six_months_ago = today - timedelta(days=6 * 30)
         # end_date = today.strftime('%Y-%m-%d')
@@ -105,7 +134,8 @@ class GoalsService:
         savings_entries = Savings.objects(
             parent_goal_id=goal_id,
             entry_date__gte=start_date,
-            entry_date__lte=end_date
+            entry_date__lte=end_date,
+            user_phone=user['phone']
         )
         savings_by_month = defaultdict(float)
         for savings in savings_entries:
@@ -124,8 +154,8 @@ class GoalsService:
         
         return result_savings
     
-    async def acheive(goal_id, request_data):
-        goal =  Goal.objects(id=goal_id).first()
+    async def acheive(goal_id, request_data, user):
+        goal =  Goal.objects(id=goal_id, user_phone=user['phone']).first()
         if not goal:
             return {"message": "Goal not found"}
         goal.status = request_data.get("status", goal.status)
