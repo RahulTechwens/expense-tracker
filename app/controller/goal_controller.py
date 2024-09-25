@@ -9,10 +9,10 @@ from fastapi import HTTPException, APIRouter, Query, Request  # type: ignore
 
 class GoalsController:
             
-    async def add_goals(request: Request):
+    async def add_goals(request: Request, user):
         try:
             request_data = await request.json()
-            result = await GoalsService.add_goals(request_data)
+            result = await GoalsService.add_goals(request_data, user)
             response_data = {"status": "success", "result": request_data}
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
@@ -25,9 +25,9 @@ class GoalsController:
         
         
         
-    async def delete_goals(goal_id):
+    async def delete_goals(goal_id, user):
         try:
-            result = await GoalsService.delete_goals(goal_id)
+            result = await GoalsService.delete_goals(goal_id, user)
             if result == True:
                 return JSONResponse(
                     ResponseServiceHelper.success_helper(
@@ -46,9 +46,9 @@ class GoalsController:
             raise HTTPException(status_code=500, detail=str(e))
 
             
-    async def return_goals(goal_id):
+    async def return_goals(goal_id, user):
         try:
-            result = await GoalsService.all_goals(goal_id)
+            result = await GoalsService.all_goals(goal_id, user)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 
@@ -59,10 +59,10 @@ class GoalsController:
             raise HTTPException(status_code=500, detail=str(e))
         
         
-    async def add_savings(request: Request):
+    async def add_savings(request: Request, user):
         try:
             request_data = await request.json()
-            result = await GoalsService.add_savings(request_data)
+            result = await GoalsService.add_savings(request_data, user)
             response_data = {"status": "success", "result": request_data}
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
@@ -74,9 +74,9 @@ class GoalsController:
             raise HTTPException(status_code=500, detail=str(e))
         
         
-    async def return_savings(goal_id):
+    async def return_savings(goal_id, user):
         try:
-            result = await GoalsService.return_savings(goal_id)
+            result = await GoalsService.return_savings(goal_id, user)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 
@@ -86,10 +86,10 @@ class GoalsController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def achieve_goals(goal_id, request):
+    async def achieve_goals(goal_id, request, user):
         try:
             request_data = await request.json()
-            result = await GoalsService.acheive(goal_id, request_data)
+            result = await GoalsService.acheive(goal_id, request_data, user)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 

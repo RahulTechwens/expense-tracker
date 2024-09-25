@@ -5,10 +5,11 @@ from ..helper.response_helper import ResponseServiceHelper
 
 
 class ExpenseController:
-    async def create_expense(request: Request):
+    async def create_expense(request: Request, user):
         try:
+            print(user["phone"], "dgdjgy")
             request_data = await request.json()
-            await ExpenseService.insert_expense(request_data)
+            await ExpenseService.insert_expense(request_data, user)
             response_data = {"status": "success", "result": request_data}
             return JSONResponse(
                 status_code=200,
@@ -34,13 +35,13 @@ class ExpenseController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def cat_filter(cat, start_date, end_date, group_by):
+    async def cat_filter(cat, start_date, end_date, group_by, user):
         try:
             cat = cat.split(",") if cat else []
             start_date = start_date or None
             end_date = end_date or None
             group_by = group_by or None
-            result = await ExpenseService.filter_sms_category(cat, start_date, end_date,group_by)
+            result = await ExpenseService.filter_sms_category(cat, start_date, end_date,group_by, user)
             return ResponseServiceHelper.success_helper(
                 200,
                 result
@@ -83,19 +84,19 @@ class ExpenseController:
             content = {"message": "The custom category renamed to " + result}
         )
         
-    async def time_wise_expense(request: Request):
+    async def time_wise_expense(request: Request, user):
         request_data = await request.json()
-        result = await ExpenseService.time_wise_expense(request_data)
+        result = await ExpenseService.time_wise_expense(request_data, user)
 
         return ResponseServiceHelper.success_helper(
             200,
             {"message": "All data fetched successfully", "data": result}
         )
 
-    async def graph_wise_expense(request: Request):
+    async def graph_wise_expense(request: Request, user):
         try:
             request_data = await request.json()
-            result = await ExpenseService.graph_filter(request_data)
+            result = await ExpenseService.graph_filter(request_data, user)
 
 
             return ResponseServiceHelper.success_helper(
@@ -105,10 +106,10 @@ class ExpenseController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def graph_wise_categories(request: Request):
+    async def graph_wise_categories(request: Request, user):
         try:
             request_data = await request.json()
-            result = await ExpenseService.graph_category(request_data)
+            result = await ExpenseService.graph_category(request_data, user)
 
 
             return ResponseServiceHelper.success_helper(
@@ -118,10 +119,10 @@ class ExpenseController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def alter_cat(request: Request):
+    async def alter_cat(request: Request, user):
         try:
             request_data = await request.json()
-            result = await ExpenseService.alter_cat(request_data)
+            result = await ExpenseService.alter_cat(request_data, user)
             return ResponseServiceHelper.success_helper(
                 200,
                 result

@@ -1,12 +1,12 @@
-from fastapi.responses import JSONResponse  # type: ignore
-from fastapi import HTTPException # type: ignore
+from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 from ..services.alert_service import AlertService
 from ..helper.response_helper import ResponseServiceHelper 
-from bson import ObjectId # type: ignore
+from bson import ObjectId
 from app.models.alert_model import Alert
 
 class AlertController:
-    async def set_alert(request):
+    async def set_alert(request, user):
         try:
             request_data = await request.json()
             check_cat = await AlertService.check_categories(request_data.get("cat_ids"))
@@ -16,7 +16,7 @@ class AlertController:
                     content={"message": "Please provide the categories properly"},
                 
                 )
-            result = await AlertService().insert_alert(request_data)
+            result = await AlertService().insert_alert(request_data, user)
             response_data = {"status": "success", "result": request_data}
             
             return JSONResponse(
@@ -27,9 +27,9 @@ class AlertController:
             raise HTTPException(status_code=500, detail=str(e))
 
 
-    async def get_alerts():
+    async def get_alerts(user):
         try:
-            result = await AlertService.all_alerts()
+            result = await AlertService.all_alerts(user)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 
@@ -39,9 +39,9 @@ class AlertController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def toggle_status(alert_id: str, status:bool):
+    async def toggle_status(alert_id: str, status:bool, user):
         try:
-            response = await AlertService.toggle_alert_status(alert_id, status)
+            response = await AlertService.toggle_alert_status(alert_id, status, user)
             if response:
                 return JSONResponse(
                     ResponseServiceHelper.success_helper(
@@ -59,10 +59,10 @@ class AlertController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def delete_alert(ids: list):
+    async def delete_alert(ids: list, user):
         try:
             splited_ids = ids.split(",")
-            await AlertService.delete_alert(splited_ids)
+            await AlertService.delete_alert(splited_ids, user)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 
@@ -72,9 +72,9 @@ class AlertController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def update_alert(id: str, request):
+    async def update_alert(id: str, request, user):
         try:
-            update_response = await AlertService.update_alert(id , request)
+            update_response = await AlertService.update_alert(id , request, user)
             return JSONResponse(
                 ResponseServiceHelper.success_helper(
                     200, 

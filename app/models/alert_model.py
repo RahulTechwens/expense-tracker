@@ -6,6 +6,7 @@ class Alert(Document):
     limit = StringField(required=False)
     cat_ids = ListField(required=False)
     status = BooleanField(required=False)
+    user_phone= StringField(required=False)
     
 class ToggleStatusRequest(BaseModel):
     active: bool

@@ -9,13 +9,14 @@ class Expense(Document):
     bank = StringField(required=True)
     date = StringField(required=True)
     # date = DateTimeField(default=datetime.datetime.time)
-    body = StringField()
+    body = StringField(required=False)
     amount = FloatField(required=True)
     type = StringField(required=True)
     method = StringField(required=True)
     manual = BooleanField(required=True)
     keywords = ListField(StringField(), default=[])
     vector = ListField(FloatField(), default=[])
+    user_phone= StringField(required=False)
     meta = {
         # 'collection': 'demo_sms_data'
         'collection': 'expenses'
