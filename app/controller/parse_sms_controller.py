@@ -104,9 +104,9 @@ class ParseSmsController:
                 
                 expense = Expense(
                     cat = parsed_text,
-                    merchant = "",
+                    merchant = "Unknown",
                     acct = account_number if account_number else '',
-                    bank = parsed_bank_name if parsed_bank_name else '',
+                    bank = parsed_bank_name if parsed_bank_name else 'Unknown',
                     date = formatted_date,
                     amount =  float(amount[0]) if amount else '',
                     type = type_msg[0] if type_msg else '',
@@ -139,9 +139,9 @@ class ParseSmsController:
                 
                 expense = Expense(
                     cat = parsed_text,
-                    merchant = recipient if recipient else '',
+                    merchant = recipient if recipient else 'Unknown',
                     acct = account_number if account_number else '',
-                    bank = parsed_bank_name[0] if parsed_bank_name[0] else '',
+                    bank = parsed_bank_name[0] if parsed_bank_name[0] else 'Unknown',
                     date = formatted_date,
                     amount =  float(amount[0]) if amount else '',
                     type = transaction_type[0] if transaction_type[0] else '',
@@ -170,9 +170,9 @@ class ParseSmsController:
                 
                 expense = Expense(
                     cat = parsed_text,
-                    merchant = recipient if recipient else '',
+                    merchant = recipient if recipient else 'Unknown',
                     acct = account_number if account_number else '',
-                    bank = parsed_bank_name[0] if parsed_bank_name[0] else '',
+                    bank = parsed_bank_name[0] if parsed_bank_name[0] else 'Unknown',
                     date = formatted_date,
                     amount =  float(amount[0]) if amount else '',
                     type = transaction_type if transaction_type else '',
@@ -227,9 +227,9 @@ class ParseSmsController:
 
             expense = Expense(
                 cat = parsed_text,
-                merchant = recipient if recipient else '',
+                merchant = recipient if recipient else 'Unknown',
                 acct = account_number if account_number else '',
-                bank = parsed_bank_name[0] if parsed_bank_name[0] else '',
+                bank = parsed_bank_name[0] if parsed_bank_name[0] else 'Unknown',
                 date = formatted_date,
                 amount =  float(amount) if amount else 0,
                 type = transaction_type if transaction_type else '',
@@ -258,9 +258,9 @@ class ParseSmsController:
                     extracted_info[key] = match.group(1).strip()
             expense = Expense(
                 cat=parsed_text,
-                merchant=extracted_info.get("recipient", "N/A"),
+                merchant=extracted_info.get("recipient", "Unknown"),
                 acct=extracted_info["account_number"],
-                bank=extracted_info["bank"],
+                bank=extracted_info["bank"] or "Unknown",
                 date=extracted_info["date_time"],
                 amount=float(extracted_info["amount"]),
                 type=extracted_info["transaction_type"],
@@ -290,7 +290,7 @@ class ParseSmsController:
  
             expense = Expense(
                 cat=parsed_text,
-                merchant=extracted_info.get("recipient", ""),
+                merchant=extracted_info.get("recipient", "Unknown"),
                 acct=extracted_info.get("account_number", ''),
                 bank=extracted_info.get("bank", ''),
                 date=formatted_date,
@@ -305,39 +305,39 @@ class ParseSmsController:
             expense.save()
  
             return str(expense.id)
-        elif any(
-            bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]
-        ):
-            regex_for_axis = {
-                "transaction_type": r"(Credited|Debited)",
-                "amount": r"Rs\.(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)",
-                "account_number": r"A/c\s\.\.\.\d{4}",
-                "bank": r"-\s([A-Za-z\s]+)$",
-                "recipient": r"by\s([a-zA-Z0-9._]+)",
-                "date_time": r"\((\d{2}-\d{2}-\d{4})\s(\d{2}:\d{2}:\d{2})\)",
-            }
-            extracted_info = {}
-            for key, pattern in regex_for_axis.items():
-                match = re.search(pattern, message)
-                if match:
-                    extracted_info[key] = match.group(1).strip()
-            return extracted_info
-        # return None
+        # elif any(
+        #     bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]
+        # ):
+        #     regex_for_axis = {
+        #         "transaction_type": r"(Credited|Debited)",
+        #         "amount": r"Rs\.(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)",
+        #         "account_number": r"A/c\s\.\.\.\d{4}",
+        #         "bank": r"-\s([A-Za-z\s]+)$",
+        #         "recipient": r"by\s([a-zA-Z0-9._]+)",
+        #         "date_time": r"\((\d{2}-\d{2}-\d{4})\s(\d{2}:\d{2}:\d{2})\)",
+        #     }
+        #     extracted_info = {}
+        #     for key, pattern in regex_for_axis.items():
+        #         match = re.search(pattern, message)
+        #         if match:
+        #             extracted_info[key] = match.group(1).strip()
+        #     return extracted_info
+        # # return None
     
-        else:
-            expense = Expense(
-                cat="",
-                merchant="",
-                acct="",
-                bank="",
-                date="",
-                amount="",
-                type="",
-                method = "",
-                manual= "",
-                user_phone=user['phone']
+        # else:
+        #     expense = Expense(
+        #         cat="",
+        #         merchant="",
+        #         acct="",
+        #         bank="",
+        #         date="",
+        #         amount="",
+        #         type="",
+        #         method = "",
+        #         manual= "",
+        #         user_phone=user['phone']
                 
-            )
-            expense.save()
-            return str(expense.id)
+        #     )
+        #     expense.save()
+        #     return str(expense.id)
         
