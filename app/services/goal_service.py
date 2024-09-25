@@ -19,8 +19,8 @@ class GoalsService:
         goal.save()
         return str(goal.id)
     
-    async def delete_goals(goal_id):
-        goal = Goal.objects(id=ObjectId(goal_id)).first()
+    async def delete_goals(goal_id, user):
+        goal = Goal.objects(id=ObjectId(goal_id), user_phone=user['phone']).first()
         if goal:
             goal.delete()
             return True
