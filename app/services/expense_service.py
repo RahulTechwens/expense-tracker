@@ -358,7 +358,7 @@ class ExpenseService:
                 query = Q(date__gte=start_date) & Q(date__lte=end_date)
 
                 if type == "category":
-                    data = Expense.objects(query)
+                    data = Expense.objects(query, user_phone=user['phone'])
 
                     if data.count() == 0:
                         return []
@@ -394,7 +394,7 @@ class ExpenseService:
 
                 elif type == "merchant":
                     categorized_expenses = {}
-                    data = Expense.objects(query)
+                    data = Expense.objects(query, user_phone=user['phone'])
 
                     if data.count() == 0:
                         return []
@@ -429,7 +429,7 @@ class ExpenseService:
                 elif type == "all":
                     query = Q(date__gte=start_date) & Q(date__lte=end_date)
                     # data = Expense.objects(query)
-                    data = Expense.objects(query).order_by("-date")
+                    data = Expense.objects(query, user_phone=user['phone']).order_by("-date")
 
                     if data.count() == 0:
                         return []
@@ -484,9 +484,13 @@ class ExpenseService:
             for category in categories:
                 label = category.label
                 
+                # print(label)
+                
                 expenses = Expense.objects(
                     Q(cat=label, user_phone=user['phone']) & Q(date__gte=start_date) & Q(date__lte=end_date) 
                 )
+                for item in expenses:
+                    print(item.cat)
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
                 
