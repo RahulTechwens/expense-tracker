@@ -7,6 +7,7 @@ class Goal(Document):
     target_amount = FloatField(required=True)
     status = BooleanField(required=False, default=False)
     user_phone = StringField(required=False)
+    created_at= StringField(required=False)
     meta = {
         'collection': 'goals'
     }
