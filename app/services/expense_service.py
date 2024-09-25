@@ -567,20 +567,19 @@ class ExpenseService:
 
             # return latest_categories
 
-
-
-
-
-
             for category in latest_categories:
                 # label = category.label
 
-                expenses = Expense.objects(Q(cat=category) & Q(date=specific_date_start))
+                expenses = Expense.objects(
+                    Q(cat=category) & Q(date__gte=specific_date_start) & Q(date__lte=specific_date_end)
+                )
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
 
                 previous_day_expenses = Expense.objects(
-                    Q(cat=category) & Q(date=previous_date_start)
+                    Q(cat=category)
+                    & Q(date__gte=previous_date_start)
+                    & Q(date__lte=previous_date_end)
                 )
                 previous_total_amount = sum(
                     float(previous_day_expense.amount)
@@ -600,8 +599,6 @@ class ExpenseService:
                 "data": result,
             }
             return content
-        
-        
         
         
     # @staticmethod
