@@ -84,6 +84,12 @@ class ParseSmsController:
         expense.save()  
         return str(expense.id)
 
+    @staticmethod
+    def generate_slug(merchant_name):
+        merchant_name = merchant_name.lower()
+        merchant_name = re.sub(r"[\s\-]+", "_", merchant_name)
+        merchant_slug = re.sub(r"[^\w_]", "", merchant_name)
+        return merchant_slug
 
 
     @staticmethod
@@ -105,6 +111,7 @@ class ParseSmsController:
                 expense = Expense(
                     cat = parsed_text,
                     merchant = "Unknown",
+                    merchant_slug=ParseSmsController.generate_slug("Unknown"),
                     acct = account_number if account_number else '',
                     bank = parsed_bank_name if parsed_bank_name else 'Unknown',
                     date = formatted_date,
@@ -140,6 +147,7 @@ class ParseSmsController:
                 expense = Expense(
                     cat = parsed_text,
                     merchant = recipient if recipient else 'Unknown',
+                    merchant_slug=ParseSmsController.generate_slug(recipient if recipient else 'Unknown'),
                     acct = account_number if account_number else '',
                     bank = parsed_bank_name[0] if parsed_bank_name[0] else 'Unknown',
                     date = formatted_date,
@@ -171,6 +179,7 @@ class ParseSmsController:
                 expense = Expense(
                     cat = parsed_text,
                     merchant = recipient if recipient else 'Unknown',
+                    merchant_slug=ParseSmsController.generate_slug(recipient if recipient else 'Unknown'),
                     acct = account_number if account_number else '',
                     bank = parsed_bank_name[0] if parsed_bank_name[0] else 'Unknown',
                     date = formatted_date,
@@ -195,6 +204,7 @@ class ParseSmsController:
                 expense = Expense(
                     cat = parsed_text,
                     merchant = recipient if recipient else '',
+                    merchant_slug=ParseSmsController.generate_slug(recipient if recipient else 'Unknown'),
                     acct = account_number if account_number else '',
                     bank = parsed_bank_name[0] if parsed_bank_name[0] else '',
                     date = formatted_date,
@@ -228,6 +238,7 @@ class ParseSmsController:
             expense = Expense(
                 cat = parsed_text,
                 merchant = recipient if recipient else 'Unknown',
+                merchant_slug=ParseSmsController.generate_slug(recipient if recipient else 'Unknown'),
                 acct = account_number if account_number else '',
                 bank = parsed_bank_name[0] if parsed_bank_name[0] else 'Unknown',
                 date = formatted_date,
@@ -259,6 +270,7 @@ class ParseSmsController:
             expense = Expense(
                 cat=parsed_text,
                 merchant=extracted_info.get("recipient", "Unknown"),
+                merchant_slug=ParseSmsController.generate_slug(extracted_info.get("recipient", "Unknown")),
                 acct=extracted_info["account_number"],
                 bank=extracted_info["bank"] or "Unknown",
                 date=extracted_info["date_time"],
@@ -291,6 +303,7 @@ class ParseSmsController:
             expense = Expense(
                 cat=parsed_text,
                 merchant=extracted_info.get("recipient", "Unknown"),
+                merchant_slug=ParseSmsController.generate_slug(extracted_info.get("recipient", "Unknown")),
                 acct=extracted_info.get("account_number", ''),
                 bank=extracted_info.get("bank", ''),
                 date=formatted_date,
