@@ -260,7 +260,7 @@ class ExpenseService:
                 categorized_expenses = {}
 
                 # Fetch expenses matching the query (filtered by date)
-                data = Expense.objects(query)
+                data = Expense.objects(query).order_by("-date")
                 if data.count() == 0:
                     return []
 
@@ -298,7 +298,7 @@ class ExpenseService:
 
             elif type == "merchant":
                 categorized_expenses = {}
-                data = Expense.objects(query)
+                data = Expense.objects(query).order_by("-date")
                 if data.count() == 0:
                     return []
 
@@ -358,7 +358,7 @@ class ExpenseService:
                 query = Q(date__gte=start_date) & Q(date__lte=end_date)
 
                 if type == "category":
-                    data = Expense.objects(query, user_phone=user['phone'])
+                    data = Expense.objects(query, user_phone=user['phone']).order_by("-date")
 
                     if data.count() == 0:
                         return []
@@ -394,7 +394,7 @@ class ExpenseService:
 
                 elif type == "merchant":
                     categorized_expenses = {}
-                    data = Expense.objects(query, user_phone=user['phone'])
+                    data = Expense.objects(query, user_phone=user['phone']).order_by("-date")
 
                     if data.count() == 0:
                         return []
@@ -543,13 +543,15 @@ class ExpenseService:
                 previous_total_amount = sum(float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses)  # Cast to float
                 previous_total_expense += previous_total_amount
 
-                result.append(
-                    {
-                        "category": label,
-                        "amount": round(float(total_amount), 2),
-                        "previous_amount": round(float(previous_total_amount), 2),
-                    }
-                )
+
+                if total_amount > 0:
+                    result.append(
+                        {
+                            "category": label,
+                            "amount": round(float(total_amount), 2),
+                            "previous_amount": round(float(previous_total_amount), 2),
+                        }
+                    )
             content = {
                 "message": "All Data Fetched Successfully",
                 "data": result,

@@ -18,10 +18,17 @@ class AuthController:
         try:
             request_data = await request.json()
             result = await AuthService.verify(request_data)
-            return ResponseServiceHelper.success_helper(
-                200,
-                result
-            )
+            
+            if result['status']:
+                return ResponseServiceHelper.success_helper(
+                    200,
+                    result
+                )
+            else:
+                return ResponseServiceHelper.success_helper(
+                    400,
+                    result
+                )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     
