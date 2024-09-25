@@ -8,13 +8,13 @@ class GoalsService:
 
     @staticmethod
     async def add_goals(goal_request, user):
-        
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),)
         goal = Goal(
             title=goal_request.get("title"),
             description=goal_request.get("description"),
             target_date=goal_request.get("target_date"),
             target_amount=goal_request.get("target_amount"),
-            created_at = datetime.now().strftime("%Y-%m-%d"),
+            created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             user_phone = user['phone']
         )
         goal.save()
