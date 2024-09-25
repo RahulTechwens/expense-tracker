@@ -611,11 +611,11 @@ class ExpenseService:
         return content
 
     @staticmethod
-    async def alter_cat(alter_request):
+    async def alter_cat(alter_request, user):
         expense_id = alter_request.get("expense_id")
         new_cat_id = alter_request.get("new_cat_id")
 
-        expense = Expense.objects(id=expense_id).first()
+        expense = Expense.objects(id=expense_id, user_phone=user['phone']).first()
         new_cat = Cat.objects(id=new_cat_id).first()
         new_cat_name = new_cat.label
 
