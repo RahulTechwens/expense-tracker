@@ -502,13 +502,14 @@ class ExpenseService:
                 )
                 previous_total_expense += previous_total_amount
                 
-                result.append(
-                    {
-                        "category": label,
-                        "amount": round(float(total_amount), 2),
-                        "previous_amount": round(float(previous_total_amount), 2),
-                    }
-                )
+                if total_amount > 0:
+                    result.append(
+                        {
+                            "category": label,
+                            "amount": round(float(total_amount), 2),
+                            "previous_amount": round(float(previous_total_amount), 2),
+                        }
+                    )
 
 
             content = {
