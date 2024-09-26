@@ -129,3 +129,14 @@ class ExpenseController:
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+        
+    async def graph_data(type, user):
+        try:
+            # request_data = await request.json()
+            result = await ExpenseService.graph(type, user)
+            return ResponseServiceHelper.success_helper(
+                200,
+                result
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))

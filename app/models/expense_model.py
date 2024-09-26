@@ -19,7 +19,7 @@ class Expense(Document):
     user_phone= StringField(required=False)
     meta = {
         'collection': 'demo_sms_data'
-        #'collection': 'expenses'
+        # 'collection': 'expenses'
     }
     
     
