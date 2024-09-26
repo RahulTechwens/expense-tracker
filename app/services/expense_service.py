@@ -502,41 +502,23 @@ class ExpenseService:
 
             for category in latest_categories:
 
-<<<<<<< HEAD
                 expenses = Expense.objects(
                     Q(cat=category) & Q(date__gte=start_date) & Q(date__lte=end_date)
                 )
 
-=======
-            for category in categories:
-                label = category.label
-                
-                # print(label)
-                
-                expenses = Expense.objects(
-                    Q(cat=label, user_phone=user['phone']) & Q(date__gte=start_date) & Q(date__lte=end_date) 
-                )
-                for item in expenses:
-                    print(item.cat)
->>>>>>> 43beed69bb0ae7f8fafb0c000d43264ab6e26c7a
                 total_amount = sum(float(expense.amount) for expense in expenses)
                 total_expense += total_amount
 
                 previous_day_expenses = Expense.objects(
-<<<<<<< HEAD
                     Q(cat=category)
                     & Q(date__gte=previous_start_date)
                     & Q(date__lte=previous_end_date)
-=======
-                    Q(cat=label,  user_phone=user['phone']) & Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date)
->>>>>>> 43beed69bb0ae7f8fafb0c000d43264ab6e26c7a
                 )
                 previous_total_amount = sum(
                     float(previous_day_expense.amount)
                     for previous_day_expense in previous_day_expenses
                 )
                 previous_total_expense += previous_total_amount
-<<<<<<< HEAD
 
                 result.append(
                     {
@@ -545,17 +527,6 @@ class ExpenseService:
                         "previous_amount": round(float(previous_total_amount), 2),
                     }
                 )
-=======
-                
-                if total_amount > 0:
-                    result.append(
-                        {
-                            "category": label,
-                            "amount": round(float(total_amount), 2),
-                            "previous_amount": round(float(previous_total_amount), 2),
-                        }
-                    )
->>>>>>> 43beed69bb0ae7f8fafb0c000d43264ab6e26c7a
 
             content = {
                 "message": "All Data Fetched Successfully",
@@ -582,7 +553,6 @@ class ExpenseService:
             previous_total_expense = 0.0
 
 
-<<<<<<< HEAD
             expenses = Expense.objects(
                 Q(date__gte=specific_date_start) & Q(date__lte=specific_date_end)
             ).order_by("-date")
@@ -626,25 +596,6 @@ class ExpenseService:
                         "previous_amount": round(float(previous_total_amount), 2),
                     }
                 )
-=======
-                expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str) & Q( user_phone=user['phone']))
-                total_amount = sum(float(expense.amount) for expense in expenses)
-                total_expense += total_amount
-
-                previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str) & Q( user_phone=user['phone']))
-                previous_total_amount = sum(float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses)  # Cast to float
-                previous_total_expense += previous_total_amount
-
-
-                if total_amount > 0:
-                    result.append(
-                        {
-                            "category": label,
-                            "amount": round(float(total_amount), 2),
-                            "previous_amount": round(float(previous_total_amount), 2),
-                        }
-                    )
->>>>>>> 43beed69bb0ae7f8fafb0c000d43264ab6e26c7a
             content = {
                 "message": "All Data Fetched Successfully",
                 "data": result,

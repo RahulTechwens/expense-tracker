@@ -64,12 +64,30 @@ class GoalsController:
             request_data = await request.json()
             result = await GoalsService.add_savings(request_data, user)
             response_data = {"status": "success", "result": request_data}
-            return JSONResponse(
-                ResponseServiceHelper.success_helper(
-                    200, 
-                    {"message": "Savings amount added successfully", "data": result}
+            
+            if result == "zero":
+                return JSONResponse(
+                    ResponseServiceHelper.error_helper(
+                        400,
+                        {"message": "Entry amount is similar to zero, entry not allowed"}
+                    )
                 )
-            )
+                
+            elif result == "greater":
+                return JSONResponse(
+                    ResponseServiceHelper.error_helper(
+                        400,
+                        {"message": "Entry amount is greater than remaining amount, entry not allowed"}
+                    )
+                )
+                
+            else:
+                return JSONResponse(
+                    ResponseServiceHelper.success_helper(
+                        200, 
+                        {"message": "Savings amount added successfully", "data": result}
+                    )
+                )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         

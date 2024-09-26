@@ -103,9 +103,9 @@ class GoalsService:
         reamining_amount = target_amount - total_savings
     
         if entry_amount > reamining_amount:
-            return "Entry amount is greater than remaining amount -> entry not allowed"
+            return "greater"
         elif entry_amount == 0:
-            return "Entry amount is similar to zero -> entry not allowed"
+            return "zero"
         else:
             try:
                 # Check if the parent goal exists
