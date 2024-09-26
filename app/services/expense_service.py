@@ -12,7 +12,7 @@ from collections import defaultdict
 from calendar import monthrange
 from mongoengine.queryset.visitor import Q
 from bson.objectid import ObjectId
-
+from dateutil.relativedelta import relativedelta
 
 class ExpenseService:
 
@@ -782,3 +782,68 @@ class ExpenseService:
             expense.cat = new_cat_name
             expense.save()
         return {"message": "category updated"}
+
+    @staticmethod
+    async def graph(request_data, user):
+        filter_type = request_data.get('type')
+        today = datetime.now().date()
+        response = []
+        
+        if filter_type == 'daily':
+            six_days_ago = today - timedelta(days=6)
+            expenses = Expense.objects(Q(date__gte=str(six_days_ago)) & Q(date__lte=str(today)) & Q(user_phone=user))
+            
+            # Logic for grouping by day
+            response = ExpenseService._group_by_period(expenses, "day")
+        
+        elif filter_type == 'monthly':
+            # Calculate the date 6 months ago
+            six_months_ago = today - relativedelta(months=6)
+            
+            # Query for the last 6 months of expenses
+            expenses = Expense.objects(Q(date__gte=str(six_months_ago)) & Q(date__lte=str(today)) & Q(user_phone=user))
+            
+            # Logic for grouping by month
+            response = ExpenseService._group_by_period(expenses, "month")
+        
+        elif filter_type == 'yearly':
+            # Calculate the date 6 years ago
+            six_years_ago = today - relativedelta(years=6)
+            
+            # Query for the last 6 years of expenses
+            expenses = Expense.objects(Q(date__gte=str(six_years_ago)) & Q(date__lte=str(today)) & Q(user_phone=user))
+            
+            # Logic for grouping by year
+            response = ExpenseService._group_by_period(expenses, "year")
+        
+        else:
+            return []
+        
+        return response
+    
+    @staticmethod
+    def _group_by_period(expenses, period_type):
+        # Create a dictionary to hold grouped amounts by period (e.g., month, year, day)
+        grouped_data = defaultdict(float)
+        
+        for expense in expenses:
+            # Convert the expense date string into a datetime object
+            expense_date = datetime.strptime(expense.date, '%Y-%m-%d')
+            
+            if period_type == "day":
+                # Group by day (format: 'YYYY-MM-DD')
+                period = expense_date.strftime('%Y-%m-%d')
+            elif period_type == "month":
+                # Group by month (format: 'YYYY-MM')
+                period = expense_date.strftime('%Y-%m')
+            elif period_type == "year":
+                # Group by year (format: 'YYYY')
+                period = expense_date.strftime('%Y')
+            
+            # Sum the amounts for each period
+            grouped_data[period] += expense.amount
+        
+        # Create the response format
+        response = [{"month" if period_type == "month" else period_type: period, "amount": amount} for period, amount in grouped_data.items()]
+        
+        return response
