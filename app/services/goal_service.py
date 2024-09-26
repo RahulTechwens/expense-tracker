@@ -20,8 +20,8 @@ class GoalsService:
         goal.save()
         return str(goal.id)
     
-    async def delete_goals(goal_id, user):
-        goal = Goal.objects(id=ObjectId(goal_id), user_phone=user['phone']).first()
+    async def delete_goals(goal_id):
+        goal = Goal.objects(id=ObjectId(goal_id)).first()
         if goal:
             goal.delete()
             return True
@@ -81,22 +81,49 @@ class GoalsService:
         entry_amount = round(float(entry_request.get("entry_amount", 0.0)), 2)
 
         parent_goal_id = entry_request.get("parent_goal_id")
-
-        try:
-            # Check if the parent goal exists
-            parent_goal = Goal.objects.get(id=parent_goal_id,user_phone=user['phone'])
-        except DoesNotExist:
-            return {"error": "Parent goal not found"}
-
-        savings = Savings(
-            parent_goal_id=entry_request.get("parent_goal_id"),
-            entry_amount=entry_request.get("entry_amount"),
-            entry_date=entry_request.get("entry_date"),
-            user_phone=user['phone']
-        )
-        savings.save()
+        goal = Goal.objects(id=ObjectId(parent_goal_id), user_phone=user['phone']).first()
+        target_amount = goal.target_amount
         
-        return str(savings.id)
+        goal_dict = goal.to_mongo().to_dict()
+        goal_dict["_id"] = str(goal_dict["_id"])
+        savings_entries = Savings.objects(parent_goal_id=str(goal_dict.get("_id")))
+        
+        result_savings = []
+        
+        for savings in savings_entries:
+            savings_dict = savings.to_mongo().to_dict()
+            result_savings.append({
+                'entry_amount': savings_dict.get('entry_amount')
+            })
+        if "_id" in goal_dict:
+            goal_dict["_id"] = str(goal_dict["_id"])
+        total_savings = sum(s['entry_amount'] for s in result_savings if s['entry_amount'])
+        
+        
+        reamining_amount = target_amount - total_savings
+    
+        if entry_amount > reamining_amount:
+            return "Entry amount is greater than remaining amount -> entry not allowed"
+        elif entry_amount == 0:
+            return "Entry amount is similar to zero -> entry not allowed"
+        else:
+            try:
+                # Check if the parent goal exists
+                parent_goal = Goal.objects.get(id=parent_goal_id,user_phone=user['phone'])
+                #return parent_goal.title
+            except DoesNotExist:
+                return {"error": "Parent goal not found"}
+
+            savings = Savings(
+                parent_goal_id=entry_request.get("parent_goal_id"),
+                entry_amount=entry_request.get("entry_amount"),
+                entry_date=entry_request.get("entry_date"),
+                user_phone=user['phone']
+            )
+            savings.save()
+            
+            return str(savings.id)
+
 
     async def return_savings(goal_id, user):
         today = datetime.today()

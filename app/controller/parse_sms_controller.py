@@ -44,7 +44,8 @@ class ParseSmsController:
                 status_code=200,
                 content={
                     "status": True,
-                    "message": "Sms parsed successfully"
+                    "message": "Sms parsed successfully",
+                    "id": parsed_message
                 },
             )
         except Exception as e:
@@ -283,8 +284,53 @@ class ParseSmsController:
             )
             expense.save()
             return str(expense.id)
+<<<<<<< HEAD
+        
+        
+        
+        
+        elif any(bank in parsed_bank_name for bank in ["ICICIBank"]):
+
+            regex_for_axis = {
+                "transaction_type": r"(credited|debited)",
+                "amount": r"Rs\s*([\d,]+\.\d{2})",
+                "account_number": r"Acct\s*([Xx*\d]+)", 
+                "bank": r"([A-Za-z\s]+Bank)",  
+                "recipient": r"Info-\s(?:UPI|P2A|IMPS)/[\d]+/([A-Za-z\s]+)", 
+            }
+
+            extracted_info = {}
+
+            for key, pattern in regex_for_axis.items():
+                match = re.search(pattern, message)
+                if match:
+                    extracted_info[key] = match.group(1).strip()
+
+            expense = Expense(
+                cat=parsed_text, 
+                merchant=extracted_info.get("recipient", ""),
+                acct=extracted_info.get("account_number", ''), 
+                bank=extracted_info.get("bank", ''), 
+                date=formatted_date, 
+                amount=float(extracted_info.get("amount", '0.00').replace(',', '')), 
+                type=extracted_info.get("transaction_type", ''),  
+                method="",
+                manual=False,
+            )
+
+            expense.save()
+
+            return str(expense.id)
+        
+        
+
+        elif any(
+            bank in parsed_bank_name for bank in [" Bank of Baroda ", " Bank of Baroda "]
+        ):
+=======
         elif any(bank in parsed_bank_name for bank in ["ICICIBank"]):
  
+>>>>>>> 43beed69bb0ae7f8fafb0c000d43264ab6e26c7a
             regex_for_axis = {
                 "transaction_type": r"(credited|debited)",
                 "amount": r"Rs\s*([\d,]+\.\d{2})",
