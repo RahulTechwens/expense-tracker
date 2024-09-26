@@ -1145,17 +1145,17 @@ class ExpenseService:
         response = []
 
         if filter_type == 'daily':
-            six_days_ago = today - timedelta(days=6)
+            six_days_ago = today - timedelta(days=5)
             expenses = Expense.objects(Q(date__gte=str(six_days_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
             response = ExpenseService._group_by_period(expenses, "day", six_days_ago, today)
         
         elif filter_type == 'monthly':
-            six_months_ago = today - relativedelta(months=6)
+            six_months_ago = today - relativedelta(months=5)
             expenses = Expense.objects(Q(date__gte=str(six_months_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
             response = ExpenseService._group_by_period(expenses, "month", six_months_ago, today)
         
         elif filter_type == 'yearly':
-            six_years_ago = today - relativedelta(years=6)
+            six_years_ago = today - relativedelta(years=5)
             expenses = Expense.objects(Q(date__gte=str(six_years_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
             response = ExpenseService._group_by_period(expenses, "year", six_years_ago, today)
         
