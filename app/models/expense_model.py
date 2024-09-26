@@ -18,8 +18,8 @@ class Expense(Document):
     vector = ListField(FloatField(), default=[])
     user_phone= StringField(required=False)
     meta = {
-        # 'collection': 'demo_sms_data'
-        'collection': 'expenses'
+        'collection': 'demo_sms_data'
+        # 'collection': 'expenses'
     }
     
     

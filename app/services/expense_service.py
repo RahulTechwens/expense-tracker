@@ -244,9 +244,225 @@ class ExpenseService:
             cat.label = new_label
             cat.save()
         return new_label
-
+    
     @staticmethod
     async def time_wise_expense(request_data, user):
+        time_type = request_data.get("time_type")
+        index = request_data.get("index")
+        type = request_data.get("type")
+        query = Q()
+        result = []
+
+        if time_type == "daily":
+            query &= Q(date=index, user_phone=user['phone'])
+
+            if type == "category":
+                categorized_expenses = {}
+
+                # Fetch expenses matching the query (filtered by date)
+                data = Expense.objects(query).order_by("-date")
+                if data.count() == 0:
+                    return []
+
+                # Create a dictionary mapping category labels to color codes
+                cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
+
+                result = []
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+
+                    # Get the category
+                    category = item_dict.get("cat")
+
+                    if category not in categorized_expenses:
+                        cat_obj = Cat.objects(Q(label=category)).first()
+                        cat_id = str(cat_obj.id) if cat_obj else None
+                        color_code = cat_color_codes.get(
+                            category, "#ffffff"
+                        )  # Default to white if no color is found
+
+                        categorized_expenses[category] = {
+                            "headerName": category,
+                            "cat_id": cat_id,
+                            "color_code": color_code,  # Add color code at the category level
+                            "innerData": [],
+                        }
+
+                    # Append the item to the appropriate category
+                    categorized_expenses[category]["innerData"].append(item_dict)
+
+                # Convert the categorized dictionary to a list
+                result = list(categorized_expenses.values())
+                return result
+
+            elif type == "merchant":
+                categorized_expenses = {}
+                data = Expense.objects(query).order_by("-date")
+                if data.count() == 0:
+                    return []
+
+                # Step 1: Create a dictionary mapping category labels to color codes
+                cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
+
+                result = []
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+
+                    # Step 2: Get the category and append the color code
+                    category = item_dict.get("cat")
+                    item_dict["color_code"] = cat_color_codes.get(
+                        category, "#ffffff"
+                    )  # Default to white if no color found
+
+                    result.append(item_dict)
+
+                # Step 3: Build the categorized_expenses structure
+                for item in result:
+                    merchant = item.get("merchant")
+
+                    if merchant not in categorized_expenses:
+                        categorized_expenses[merchant] = {
+                            "headerName": merchant,
+                            "merchant_slug": item.get("merchant_slug"),
+                            "innerData": [],
+                        }
+
+                    categorized_expenses[merchant]["innerData"].append(item)
+
+                # Convert the dictionary to a list of categorized expenses
+                result = list(categorized_expenses.values())
+
+            elif type == "all":
+
+                data = Expense.objects(query).order_by("-date")
+                cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
+
+                for item in data:
+                    item_dict = item.to_mongo().to_dict()
+                    item_dict["_id"] = str(item_dict["_id"])
+
+                    category = item_dict.get("cat")
+
+                    item_dict["color_code"] = cat_color_codes.get(category, "#ffffff")
+                    result.append(item_dict)
+
+        elif time_type == "monthly":
+            try:
+                month = int(index) + 1
+                current_year = datetime.now().year
+                start_date = f"{current_year}-{month:02d}-01"
+                _, last_day = monthrange(current_year, month)
+                end_date = f"{current_year}-{month:02d}-{last_day:02d}"
+                query = Q(user_phone=user['phone']) &  Q(date__gte=start_date) &   Q(date__lte=end_date) 
+                
+
+                if type == "category":
+                    data = Expense.objects(query).order_by("-date")
+
+                    if data.count() == 0:
+                        return []
+
+                    categorized_expenses = {}
+
+                    cat_color_codes = {
+                        cat.label: cat.color_code for cat in Cat.objects()
+                    }
+                    
+                    for item in data:
+                        item_dict = item.to_mongo().to_dict()
+                        item_dict["_id"] = str(item_dict["_id"])
+
+                        category = item_dict.get("cat")
+                        cat_obj = Cat.objects(Q(label=category)).first()
+                        cat_id = str(cat_obj.id) if cat_obj else None
+                        # print(cat_obj.label)
+                        print(item_dict, end_date, start_date)
+                        color_code = cat_color_codes.get(category, "#ffffff")
+
+                        if category not in categorized_expenses:
+                            categorized_expenses[category] = {
+                                "headerName": category,
+                                "cat_id": cat_id,
+                                "color_code": color_code,
+                                "innerData": [],
+                            }
+
+                        categorized_expenses[category]["innerData"].append(item_dict)
+
+                    result = list(categorized_expenses.values())
+                    return result
+
+                elif type == "merchant":
+                    categorized_expenses = {}
+                    data = Expense.objects(query, user_phone=user['phone']).order_by("-date")
+
+                    if data.count() == 0:
+                        return []
+
+                    cat_color_codes = {
+                        cat.label: cat.color_code for cat in Cat.objects()
+                    }
+
+                    for item in data:
+                        item_dict = item.to_mongo().to_dict()
+                        item_dict["_id"] = str(item_dict["_id"])
+
+                        category = item_dict.get("cat")
+                        item_dict["color_code"] = cat_color_codes.get(
+                            category, "#ffffff"
+                        )
+
+                        merchant = item_dict.get("merchant")
+
+                        if merchant not in categorized_expenses:
+                            categorized_expenses[merchant] = {
+                                "headerName": merchant,
+                                "merchant_slug": item_dict.get("merchant_slug"),
+                                "innerData": [],
+                            }
+
+                        categorized_expenses[merchant]["innerData"].append(item_dict)
+
+                    result = list(categorized_expenses.values())
+                    return result
+
+                elif type == "all":
+                    # query = Q(user_phone=user['phone']) & Q(date__lte=end_date) &  Q(date__lte=end_date)
+                    # data = Expense.objects(query)
+                    data = Expense.objects(query).order_by("-date")
+
+                    if data.count() == 0:
+                        return []
+                    # Create a dictionary mapping category labels to color codes
+                    cat_color_codes = {
+                        cat.label: cat.color_code for cat in Cat.objects()
+                    }
+                    result = []
+                    for item in data:
+                        item_dict = item.to_mongo().to_dict()
+                        # Get the category and its corresponding color code
+                        category = item_dict.get("cat")
+                        item_dict["color_code"] = cat_color_codes.get(
+                            category, "#ffffff"
+                        )  # Default to white if no color is found
+
+                        item_dict["_id"] = str(item_dict["_id"])
+                        result.append(item_dict)
+
+            except ValueError:
+                return {"error": "Invalid index value"}
+
+        # # Return result
+        # content = {
+        #     "message": "All Data Fetched Successfully",
+        #     "data": result,
+        # }
+        return result
+
+    # @staticmethod
+    # async def time_wise_expense(request_data, user):
         time_type = request_data.get("time_type")
         index = request_data.get("index")
         type = request_data.get("type")
@@ -459,152 +675,8 @@ class ExpenseService:
         # }
         return result
 
-    @staticmethod
-    async def graph_filter(request_data, user):
-        time_type = request_data.get("time_type")
-        if time_type == "monthly":
-            index = request_data.get("index")
-            result = []
-
-            month = int(index) + 1
-            current_year = datetime.now().year
-
-            # Calculate start and end dates for the current month
-            start_date = f"{current_year}-{month:02d}-01T00:00:00"
-            _, last_day = monthrange(current_year, month)
-            end_date = f"{current_year}-{month:02d}-{last_day:02d}T23:59:59"
-
-            # Calculate start and end dates for the previous month
-            previous_month = int(index)
-            previous_start_date = f"{current_year}-{previous_month:02d}-01T00:00:00"
-            _, last_day = monthrange(current_year, previous_month)
-            previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}T23:59:59"
-
-            total_expense = 0.0
-            previous_total_expense = 0.0
-
-            expenses = Expense.objects(
-                Q(date__gte=start_date) & Q(date__lte=end_date)
-            ).order_by("-date")
-
-            latest_categories = []
-            seen_categories = set()
-
-            for expense in expenses:
-                if expense.cat not in seen_categories:
-                    seen_categories.add(expense.cat)
-                    latest_categories.append(expense.cat)
-                if len(latest_categories) >= 6:
-                    break
-
-            # return latest_categories
-
-
-            for category in latest_categories:
-
-                expenses = Expense.objects(
-                    Q(cat=category) & Q(date__gte=start_date) & Q(date__lte=end_date)
-                )
-
-                total_amount = sum(float(expense.amount) for expense in expenses)
-                total_expense += total_amount
-
-                previous_day_expenses = Expense.objects(
-                    Q(cat=category)
-                    & Q(date__gte=previous_start_date)
-                    & Q(date__lte=previous_end_date)
-                )
-                previous_total_amount = sum(
-                    float(previous_day_expense.amount)
-                    for previous_day_expense in previous_day_expenses
-                )
-                previous_total_expense += previous_total_amount
-
-                result.append(
-                    {
-                        "category": category,
-                        "amount": round(float(total_amount), 2),
-                        "previous_amount": round(float(previous_total_amount), 2),
-                    }
-                )
-
-            content = {
-                "message": "All Data Fetched Successfully",
-                "data": result,
-            }
-            return content
-
-        elif time_type == "daily":
-            date = request_data.get("index")
-            result = []
-
-            # categories = Cat.objects()
-            specific_date = datetime.strptime(date, "%Y-%m-%d")
-
-            specific_date_start = specific_date.strftime("%Y-%m-%dT00:00:00")
-            specific_date_end = specific_date.strftime("%Y-%m-%dT23:59:59")
-
-            previous_date = specific_date - timedelta(days=1)
-
-            previous_date_start = previous_date.strftime("%Y-%m-%dT00:00:00")
-            previous_date_end = previous_date.strftime("%Y-%m-%dT23:59:59")
-
-            total_expense = 0.0
-            previous_total_expense = 0.0
-
-
-            expenses = Expense.objects(
-                Q(date__gte=specific_date_start) & Q(date__lte=specific_date_end)
-            ).order_by("-date")
-
-            latest_categories = []
-            seen_categories = set()
-
-            for expense in expenses:
-                if expense.cat not in seen_categories:
-                    seen_categories.add(expense.cat)
-                    latest_categories.append(expense.cat)
-                if len(latest_categories) >= 6:
-                    break
-
-            # return latest_categories
-
-            for category in latest_categories:
-                # label = category.label
-
-                expenses = Expense.objects(
-                    Q(cat=category) & Q(date__gte=specific_date_start) & Q(date__lte=specific_date_end)
-                )
-                total_amount = sum(float(expense.amount) for expense in expenses)
-                total_expense += total_amount
-
-                previous_day_expenses = Expense.objects(
-                    Q(cat=category)
-                    & Q(date__gte=previous_date_start)
-                    & Q(date__lte=previous_date_end)
-                )
-                previous_total_amount = sum(
-                    float(previous_day_expense.amount)
-                    for previous_day_expense in previous_day_expenses
-                )  # Cast to float
-                previous_total_expense += previous_total_amount
-
-                result.append(
-                    {
-                        "category": category,
-                        "amount": round(float(total_amount), 2),
-                        "previous_amount": round(float(previous_total_amount), 2),
-                    }
-                )
-            content = {
-                "message": "All Data Fetched Successfully",
-                "data": result,
-            }
-            return content
-        
-        
     # @staticmethod
-    # async def graph_filter(request_data):
+    # async def graph_filter(request_data, user):
     #     time_type = request_data.get("time_type")
     #     if time_type == "monthly":
     #         index = request_data.get("index")
@@ -614,15 +686,159 @@ class ExpenseService:
     #         current_year = datetime.now().year
 
     #         # Calculate start and end dates for the current month
-    #         start_date = f"{current_year}-{month:02d}-01T00:00:00"
+    #         start_date = f"{current_year}-{month:02d}-01"
     #         _, last_day = monthrange(current_year, month)
-    #         end_date = f"{current_year}-{month:02d}-{last_day:02d}T23:59:59"
+    #         end_date = f"{current_year}-{month:02d}-{last_day:02d}"
 
     #         # Calculate start and end dates for the previous month
     #         previous_month = int(index)
-    #         previous_start_date = f"{current_year}-{previous_month:02d}-01T00:00:00"
+    #         previous_start_date = f"{current_year}-{previous_month:02d}-01"
     #         _, last_day = monthrange(current_year, previous_month)
-    #         previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}T23:59:59"
+    #         previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}"
+
+    #         total_expense = 0.0
+    #         previous_total_expense = 0.0
+
+    #         expenses = Expense.objects(
+    #             Q(date__gte=start_date) & Q(date__lte=end_date) & Q(user_phone=user['phone'])
+    #         ).order_by("-date")
+
+    #         latest_categories = []
+    #         seen_categories = set()
+
+    #         for expense in expenses:
+    #             if expense.cat not in seen_categories:
+    #                 seen_categories.add(expense.cat)
+    #                 latest_categories.append(expense.cat)
+    #             if len(latest_categories) >= 6:
+    #                 break
+
+    #         # return latest_categories
+
+
+    #         for category in latest_categories:
+
+    #             expenses = Expense.objects(
+    #                 Q(cat=category, user_phone=user['phone']) & Q(date__gte=start_date) & Q(date__lte=end_date)
+    #             )
+
+    #             total_amount = sum(float(expense.amount) for expense in expenses)
+    #             total_expense += total_amount
+
+    #             previous_day_expenses = Expense.objects(
+    #                 Q(cat=category)
+    #                 & Q(date__gte=previous_start_date)
+    #                 & Q(date__lte=previous_end_date)
+    #             )
+    #             previous_total_amount = sum(
+    #                 float(previous_day_expense.amount)
+    #                 for previous_day_expense in previous_day_expenses
+    #             )
+    #             previous_total_expense += previous_total_amount
+
+    #             result.append(
+    #                 {
+    #                     "category": category,
+    #                     "amount": round(float(total_amount), 2),
+    #                     "previous_amount": round(float(previous_total_amount), 2),
+    #                 }
+    #             )
+
+    #         content = {
+    #             "message": "All Data Fetched Successfully",
+    #             "data": result,
+    #         }
+    #         return content
+
+    #     elif time_type == "daily":
+    #         date = request_data.get("index")
+    #         result = []
+
+    #         # categories = Cat.objects()
+    #         specific_date = datetime.strptime(date, "%Y-%m-%d")
+
+    #         specific_date_start = specific_date.strftime("%Y-%m-%d")
+    #         specific_date_end = specific_date.strftime("%Y-%m-%d")
+
+    #         previous_date = specific_date - timedelta(days=1)
+
+    #         previous_date_start = previous_date.strftime("%Y-%m-%d")
+    #         previous_date_end = previous_date.strftime("%Y-%m-%d")
+
+    #         total_expense = 0.0
+    #         previous_total_expense = 0.0
+
+
+    #         expenses = Expense.objects(
+    #             Q(date__gte=specific_date_start) & Q(date__lte=specific_date_end)  & Q(date__lte=end_date)
+    #         ).order_by("-date")
+
+    #         latest_categories = []
+    #         seen_categories = set()
+
+    #         for expense in expenses:
+    #             if expense.cat not in seen_categories:
+    #                 seen_categories.add(expense.cat)
+    #                 latest_categories.append(expense.cat)
+    #             if len(latest_categories) >= 6:
+    #                 break
+
+    #         # return latest_categories
+
+    #         for category in latest_categories:
+    #             # label = category.label
+
+    #             expenses = Expense.objects(
+    #                 Q(cat=category) & Q(date__gte=specific_date_start) & Q(date__lte=specific_date_end)  & Q(date__lte=end_date)
+    #             )
+    #             total_amount = sum(float(expense.amount) for expense in expenses)
+    #             total_expense += total_amount
+
+    #             previous_day_expenses = Expense.objects(
+    #                 Q(cat=category)  & Q(date__lte=end_date)
+    #                 & Q(date__gte=previous_date_start)
+    #                 & Q(date__lte=previous_date_end)
+    #             )
+    #             previous_total_amount = sum(
+    #                 float(previous_day_expense.amount)
+    #                 for previous_day_expense in previous_day_expenses
+    #             )  # Cast to float
+    #             previous_total_expense += previous_total_amount
+
+    #             result.append(
+    #                 {
+    #                     "category": category,
+    #                     "amount": round(float(total_amount), 2),
+    #                     "previous_amount": round(float(previous_total_amount), 2),
+    #                 }
+    #             )
+    #         content = {
+    #             "message": "All Data Fetched Successfully",
+    #             "data": result,
+    #         }
+    #         return content
+        
+        
+    # @staticmethod
+    # async def graph_filter(request_data, user):
+    #     time_type = request_data.get("time_type")
+    #     if time_type == "monthly":
+    #         index = request_data.get("index")
+    #         result = []
+
+    #         month = int(index) + 1
+    #         current_year = datetime.now().year
+
+    #         # Calculate start and end dates for the current month
+    #         start_date = f"{current_year}-{month:02d}-01"
+    #         _, last_day = monthrange(current_year, month)
+    #         end_date = f"{current_year}-{month:02d}-{last_day:02d}"
+
+    #         # Calculate start and end dates for the previous month
+    #         previous_month = int(index)
+    #         previous_start_date = f"{current_year}-{previous_month:02d}-01"
+    #         _, last_day = monthrange(current_year, previous_month)
+    #         previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}"
 
     #         categories = Cat.objects()
     #         total_expense = 0.0
@@ -641,7 +857,7 @@ class ExpenseService:
     #             # label = category.label
 
     #             expenses = Expense.objects(
-    #                 Q(cat=category) & Q(date__gte=start_date) & Q(date__lte=end_date)
+    #                 Q(cat=category) & Q(date__gte=start_date) & Q(date__lte=end_date) & Q(user_phone=user['phone'])
     #             )
 
     #             total_amount = sum(float(expense.amount) for expense in expenses)
@@ -649,6 +865,7 @@ class ExpenseService:
 
     #             previous_day_expenses = Expense.objects(
     #                 Q(cat=category)
+    #                 & Q(user_phone=user['phone'])
     #                 & Q(date__gte=previous_start_date)
     #                 & Q(date__lte=previous_end_date)
     #             )
@@ -694,7 +911,7 @@ class ExpenseService:
     #             total_expense += total_amount
 
     #             previous_day_expenses = Expense.objects(
-    #                 Q(cat=label) & Q(date=previous_date_str)
+    #                 Q(cat=label) & Q(date=previous_date_str) & Q(user_phone=user['phone'])
     #             )
     #             previous_total_amount = sum(
     #                 float(previous_day_expense.amount)
@@ -715,6 +932,106 @@ class ExpenseService:
     #         }
     #         return content
         
+        
+    
+    @staticmethod
+    async def graph_filter(request_data, user):
+        time_type = request_data.get("time_type")
+        if time_type == "monthly":
+            index = request_data.get("index")
+            result = []
+
+            month = int(index) + 1
+            current_year = datetime.now().year
+            start_date = f"{current_year}-{month:02d}-01"
+            _, last_day = monthrange(current_year, month)
+            end_date = f"{current_year}-{month:02d}-{last_day:02d}"
+
+            previous_month = int(index)
+            previous_start_date = f"{current_year}-{previous_month:02d}-01"
+            _, last_day = monthrange(current_year, previous_month)
+            previous_end_date = f"{current_year}-{previous_month:02d}-{last_day:02d}"
+
+            categories = Cat.objects()
+            total_expense = 0.0 
+            previous_total_expense = 0.0  
+
+            for category in categories:
+                label = category.label
+                
+                # print(label)
+                
+                expenses = Expense.objects(
+                    Q(cat=label, user_phone=user['phone']) & Q(date__gte=start_date) & Q(date__lte=end_date) 
+                )
+                for item in expenses:
+                    print(item.cat)
+                total_amount = sum(float(expense.amount) for expense in expenses)
+                total_expense += total_amount
+                
+                previous_day_expenses = Expense.objects(
+                    Q(cat=label,  user_phone=user['phone']) & Q(date__gte=previous_start_date) & Q(date__lte=previous_end_date)
+                )
+                previous_total_amount = sum(
+                    float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses
+                )
+                previous_total_expense += previous_total_amount
+                
+                if total_amount > 0:
+                    result.append(
+                        {
+                            "category": label,
+                            "amount": round(float(total_amount), 2),
+                            "previous_amount": round(float(previous_total_amount), 2),
+                        }
+                    )
+
+
+            content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+            return content
+
+        elif time_type == "daily":
+            date = request_data.get("index")
+            result = []
+
+            categories = Cat.objects()
+            specific_date = datetime.strptime(date, "%Y-%m-%d")
+            previous_date = specific_date - timedelta(days=1)
+
+            specific_date_str = specific_date.strftime("%Y-%m-%d")
+            previous_date_str = previous_date.strftime("%Y-%m-%d")
+
+            total_expense = 0.0
+            previous_total_expense = 0.0
+
+            for category in categories:
+                label = category.label
+
+                expenses = Expense.objects(Q(cat=label) & Q(date=specific_date_str) & Q( user_phone=user['phone']))
+                total_amount = sum(float(expense.amount) for expense in expenses)
+                total_expense += total_amount
+
+                previous_day_expenses = Expense.objects(Q(cat=label) & Q(date=previous_date_str) & Q( user_phone=user['phone']))
+                previous_total_amount = sum(float(previous_day_expense.amount) for previous_day_expense in previous_day_expenses)  # Cast to float
+                previous_total_expense += previous_total_amount
+
+                
+                if total_amount > 0:
+                    result.append(
+                        {
+                            "category": label,
+                            "amount": round(float(total_amount), 2),
+                            "previous_amount": round(float(previous_total_amount), 2),
+                        }
+                    )
+            content = {
+                "message": "All Data Fetched Successfully",
+                "data": result,
+            }
+            return content
         
 
     @staticmethod
