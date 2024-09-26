@@ -8,12 +8,13 @@ class GoalsService:
 
     @staticmethod
     async def add_goals(goal_request, user):
-        
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),)
         goal = Goal(
             title=goal_request.get("title"),
             description=goal_request.get("description"),
             target_date=goal_request.get("target_date"),
             target_amount=goal_request.get("target_amount"),
+            created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             user_phone = user['phone']
         )
         goal.save()
@@ -55,7 +56,7 @@ class GoalsService:
         
         
         else:
-            goals = Goal.objects(user_phone=user['phone'])  
+            goals = Goal.objects(user_phone=user['phone']).order_by("-created_at")
             result_goals = []
             for goal in goals:
                 goal_dict = goal.to_mongo().to_dict()
