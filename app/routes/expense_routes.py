@@ -75,3 +75,7 @@ async def graph_wise_categories(request: Request, user = Depends(verify_token)):
 @router.put("/alter-cat")
 async def alter_cat( request: Request, user = Depends(verify_token)):
     return await ExpenseController.alter_cat(request, user)
+
+@router.post("/graph")
+async def global_graph( request: Request, user = Depends(verify_token)):
+    return await ExpenseController.graph_data(request, user)
