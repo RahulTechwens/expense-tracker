@@ -1106,21 +1106,18 @@ class ExpenseService:
     def _group_by_period(expenses, period_type, start_date, end_date):
         grouped_data = defaultdict(float)
         
-        # First, group the expenses by the given period
         for expense in expenses:
             expense_date = datetime.strptime(expense.date, '%Y-%m-%d')
             
             if period_type == "day":
                 period = expense_date.strftime('%Y-%m-%d')
             elif period_type == "month":
-                # Use zero-based month index (January = 0, February = 1, ..., December = 11)
                 period = int(expense_date.strftime('%m')) - 1
             elif period_type == "year":
-                period = expense_date.strftime('%Y')  # Group by year
+                period = expense_date.strftime('%Y')
             
             grouped_data[period] += expense.amount
         
-        # Now, ensure that all months (0 to 11) are present, even if they have no expenses
         periods = []
         current_date = start_date
 
@@ -1130,7 +1127,6 @@ class ExpenseService:
                 current_date += timedelta(days=1)
         elif period_type == "month":
             while current_date <= end_date:
-                # Zero-based month index (0 to 11)
                 periods.append(current_date.month - 1)
                 current_date += relativedelta(months=1)
         elif period_type == "year":
@@ -1138,14 +1134,13 @@ class ExpenseService:
                 periods.append(current_date.strftime('%Y'))
                 current_date += relativedelta(years=1)
         
-        # Prepare the final response
-        response = [{"month" if period_type == "month" else period_type: str(period), "amount": grouped_data.get(period, 0)} for period in periods]
+        response = [{"month" if period_type == "month" else period_type: str(period), "amount": float(grouped_data.get(period, 0))} for period in periods]
         
         return response
 
     @staticmethod
-    async def graph(request_data, user):
-        filter_type = request_data.get('type')
+    async def graph(type, user):
+        filter_type = type
         today = datetime.now().date()
         response = []
 
@@ -1167,5 +1162,8 @@ class ExpenseService:
         else:
             return []
         
-        return response
+        return {
+            "message": "Graph Fetched Successfully",
+            "data": response,
+        }
 
