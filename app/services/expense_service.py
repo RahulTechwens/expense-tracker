@@ -1060,7 +1060,6 @@ class ExpenseService:
             monthly_data[month_num] = 0
 
         for expense in expenses:
-            # Convert the string date to a datetime object
             if isinstance(expense.date, str):
                 try:
                     expense_date = datetime.strptime(expense.date, "%Y-%m-%d")
@@ -1068,14 +1067,11 @@ class ExpenseService:
                     print(f"Invalid date format for expense: {expense.date}")
                     continue
             else:
-                expense_date = expense.date  # If already a datetime object
-
-            # Only process expenses within the last 6 months
+                expense_date = expense.date
             if start_date <= expense_date <= today:
                 month = expense_date.month
-                monthly_data[month] += expense.amount  # Sum amounts for each month
+                monthly_data[month] += expense.amount
 
-        # Create the result list in the required format
         result = [
             {"month": str(month), "amount": str(amount)}
             for month, amount in sorted(monthly_data.items())
@@ -1143,7 +1139,6 @@ class ExpenseService:
         filter_type = type
         today = datetime.now().date()
         response = []
-
         if filter_type == 'daily':
             six_days_ago = today - timedelta(days=5)
             expenses = Expense.objects(Q(date__gte=str(six_days_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
