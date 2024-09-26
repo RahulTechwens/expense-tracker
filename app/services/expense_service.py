@@ -1100,67 +1100,72 @@ class ExpenseService:
             expense.save()
         return {"message": "category updated"}
 
+
+
+    @staticmethod
+    def _group_by_period(expenses, period_type, start_date, end_date):
+        grouped_data = defaultdict(float)
+        
+        # First, group the expenses by the given period
+        for expense in expenses:
+            expense_date = datetime.strptime(expense.date, '%Y-%m-%d')
+            
+            if period_type == "day":
+                period = expense_date.strftime('%Y-%m-%d')
+            elif period_type == "month":
+                # Use zero-based month index (January = 0, February = 1, ..., December = 11)
+                period = int(expense_date.strftime('%m')) - 1
+            elif period_type == "year":
+                period = expense_date.strftime('%Y')  # Group by year
+            
+            grouped_data[period] += expense.amount
+        
+        # Now, ensure that all months (0 to 11) are present, even if they have no expenses
+        periods = []
+        current_date = start_date
+
+        if period_type == "day":
+            while current_date <= end_date:
+                periods.append(current_date.strftime('%Y-%m-%d'))
+                current_date += timedelta(days=1)
+        elif period_type == "month":
+            while current_date <= end_date:
+                # Zero-based month index (0 to 11)
+                periods.append(current_date.month - 1)
+                current_date += relativedelta(months=1)
+        elif period_type == "year":
+            while current_date <= end_date:
+                periods.append(current_date.strftime('%Y'))
+                current_date += relativedelta(years=1)
+        
+        # Prepare the final response
+        response = [{"month" if period_type == "month" else period_type: str(period), "amount": grouped_data.get(period, 0)} for period in periods]
+        
+        return response
+
     @staticmethod
     async def graph(request_data, user):
         filter_type = request_data.get('type')
         today = datetime.now().date()
         response = []
-        
+
         if filter_type == 'daily':
             six_days_ago = today - timedelta(days=6)
-            expenses = Expense.objects(Q(date__gte=str(six_days_ago)) & Q(date__lte=str(today)) & Q(user_phone=user))
-            
-            # Logic for grouping by day
-            response = ExpenseService._group_by_period(expenses, "day")
+            expenses = Expense.objects(Q(date__gte=str(six_days_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
+            response = ExpenseService._group_by_period(expenses, "day", six_days_ago, today)
         
         elif filter_type == 'monthly':
-            # Calculate the date 6 months ago
             six_months_ago = today - relativedelta(months=6)
-            
-            # Query for the last 6 months of expenses
-            expenses = Expense.objects(Q(date__gte=str(six_months_ago)) & Q(date__lte=str(today)) & Q(user_phone=user))
-            
-            # Logic for grouping by month
-            response = ExpenseService._group_by_period(expenses, "month")
+            expenses = Expense.objects(Q(date__gte=str(six_months_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
+            response = ExpenseService._group_by_period(expenses, "month", six_months_ago, today)
         
         elif filter_type == 'yearly':
-            # Calculate the date 6 years ago
             six_years_ago = today - relativedelta(years=6)
-            
-            # Query for the last 6 years of expenses
-            expenses = Expense.objects(Q(date__gte=str(six_years_ago)) & Q(date__lte=str(today)) & Q(user_phone=user))
-            
-            # Logic for grouping by year
-            response = ExpenseService._group_by_period(expenses, "year")
+            expenses = Expense.objects(Q(date__gte=str(six_years_ago)) & Q(date__lte=str(today)) & Q(user_phone=user['phone']))
+            response = ExpenseService._group_by_period(expenses, "year", six_years_ago, today)
         
         else:
             return []
         
         return response
-    
-    @staticmethod
-    def _group_by_period(expenses, period_type):
-        # Create a dictionary to hold grouped amounts by period (e.g., month, year, day)
-        grouped_data = defaultdict(float)
-        
-        for expense in expenses:
-            # Convert the expense date string into a datetime object
-            expense_date = datetime.strptime(expense.date, '%Y-%m-%d')
-            
-            if period_type == "day":
-                # Group by day (format: 'YYYY-MM-DD')
-                period = expense_date.strftime('%Y-%m-%d')
-            elif period_type == "month":
-                # Group by month (format: 'YYYY-MM')
-                period = expense_date.strftime('%Y-%m')
-            elif period_type == "year":
-                # Group by year (format: 'YYYY')
-                period = expense_date.strftime('%Y')
-            
-            # Sum the amounts for each period
-            grouped_data[period] += expense.amount
-        
-        # Create the response format
-        response = [{"month" if period_type == "month" else period_type: period, "amount": amount} for period, amount in grouped_data.items()]
-        
-        return response
+
