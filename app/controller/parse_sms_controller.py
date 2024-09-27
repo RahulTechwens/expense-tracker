@@ -284,28 +284,68 @@ class ParseSmsController:
             )
             expense.save()
             return str(expense.id)
+        # elif any(bank in parsed_bank_name for bank in ["ICICIBank"]):
+ 
+        #     regex_for_axis = {
+        #         "transaction_type": r"(credited|debited)",
+        #         "amount": r"Rs\s*([\d,]+\.\d{2})",
+        #         "account_number": r"Acct\s*([Xx*\d]+)",
+        #         "bank": r"([A-Za-z\s]+Bank)",  
+        #         "recipient": r"Info-\s(?:UPI|P2A|IMPS)/[\d]+/([A-Za-z\s]+)",
+        #     }
+ 
+        #     extracted_info = {}
+ 
+        #     for key, pattern in regex_for_axis.items():
+        #         match = re.search(pattern, message)
+        #         if match:
+        #             extracted_info[key] = match.group(1).strip()
+ 
+        #     expense = Expense(
+        #         cat=parsed_text,
+        #         merchant=extracted_info.get("recipient", "Unknown"),
+        #         merchant_slug=ParseSmsController.generate_slug(extracted_info.get("recipient", "Unknown")),
+        #         acct=extracted_info.get("account_number", ''),
+        #         bank=extracted_info.get("bank", ''),
+        #         date=formatted_date,
+        #         amount=float(extracted_info.get("amount", '0.00').replace(',', '')),
+        #         type=extracted_info.get("transaction_type", ''),  
+        #         method="",
+        #         manual=False,
+        #         user_phone=user['phone']
+
+        #     )
+ 
+        #     expense.save()
+ 
+        #     return str(expense.id)
         elif any(bank in parsed_bank_name for bank in ["ICICIBank"]):
  
-            regex_for_axis = {
+            regex_for_icici = {
                 "transaction_type": r"(credited|debited)",
                 "amount": r"Rs\s*([\d,]+\.\d{2})",
                 "account_number": r"Acct\s*([Xx*\d]+)",
                 "bank": r"([A-Za-z\s]+Bank)",  
                 "recipient": r"Info-\s(?:UPI|P2A|IMPS)/[\d]+/([A-Za-z\s]+)",
+                "merchant":r";([^;]+)credited"
             }
  
             extracted_info = {}
  
-            for key, pattern in regex_for_axis.items():
+            for key, pattern in regex_for_icici.items():
                 match = re.search(pattern, message)
                 if match:
                     extracted_info[key] = match.group(1).strip()
+                    
+            # merchant = extracted_info.get("merchant", "Unknown")
+            # merchant_slug = ParseSmsController.generate_slug(merchant)
+            # return merchant_slug
  
             expense = Expense(
                 cat=parsed_text,
-                merchant=extracted_info.get("recipient", "Unknown"),
-                merchant_slug=ParseSmsController.generate_slug(extracted_info.get("recipient", "Unknown")),
-                acct=extracted_info.get("account_number", ''),
+                merchant=extracted_info.get("merchant", "Unknown"),
+                merchant_slug=ParseSmsController.generate_slug(extracted_info.get("merchant", "Unknown")),
+                acct=extracted_info.get("account_number", 'N/A'),
                 bank=extracted_info.get("bank", ''),
                 date=formatted_date,
                 amount=float(extracted_info.get("amount", '0.00').replace(',', '')),
