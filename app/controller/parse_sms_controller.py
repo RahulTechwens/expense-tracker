@@ -45,7 +45,7 @@ class ParseSmsController:
                 content={
                     "status": True,
                     "message": "Sms parsed successfully",
-                    "id": parsed_message
+                    # "id": parsed_message
                 },
             )
         except Exception as e:
