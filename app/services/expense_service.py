@@ -44,7 +44,8 @@ class ExpenseService:
                 manual=expense_request.get("manual"),
                 keywords=expense_request.get("keywords"),
                 vector=expense_request.get("vector"),
-                user_phone = user["phone"]
+                user_phone = user["phone"],
+                created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             )
             expense.save()
             return str(expense.id)
@@ -260,7 +261,7 @@ class ExpenseService:
                 categorized_expenses = {}
 
                 # Fetch expenses matching the query (filtered by date)
-                data = Expense.objects(query).order_by("-date")
+                data = Expense.objects(query).order_by("-created_at")
                 if data.count() == 0:
                     return []
 
@@ -298,7 +299,7 @@ class ExpenseService:
 
             elif type == "merchant":
                 categorized_expenses = {}
-                data = Expense.objects(query).order_by("-date")
+                data = Expense.objects(query).order_by("-created_at")
                 if data.count() == 0:
                     return []
 
@@ -336,7 +337,7 @@ class ExpenseService:
 
             elif type == "all":
 
-                data = Expense.objects(query).order_by("-date")
+                data = Expense.objects(query).order_by("-created_at")
                 cat_color_codes = {cat.label: cat.color_code for cat in Cat.objects()}
 
                 for item in data:
@@ -359,7 +360,7 @@ class ExpenseService:
                 
 
                 if type == "category":
-                    data = Expense.objects(query).order_by("-date")
+                    data = Expense.objects(query).order_by("-created_at")
 
                     if data.count() == 0:
                         return []
@@ -396,7 +397,7 @@ class ExpenseService:
 
                 elif type == "merchant":
                     categorized_expenses = {}
-                    data = Expense.objects(query, user_phone=user['phone']).order_by("-date")
+                    data = Expense.objects(query, user_phone=user['phone']).order_by("-created_at")
 
                     if data.count() == 0:
                         return []
@@ -431,7 +432,7 @@ class ExpenseService:
                 elif type == "all":
                     # query = Q(user_phone=user['phone']) & Q(date__lte=end_date) &  Q(date__lte=end_date)
                     # data = Expense.objects(query)
-                    data = Expense.objects(query).order_by("-date")
+                    data = Expense.objects(query).order_by("-created_at")
 
                     if data.count() == 0:
                         return []
