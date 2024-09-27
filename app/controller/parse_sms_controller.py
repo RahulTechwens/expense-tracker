@@ -364,24 +364,27 @@ class ParseSmsController:
         ####################################################################################### sbi
         elif any(bank in parsed_bank_name for bank in ["-SBI"]):
  
-            regex_for_icici = {
-                "transaction_type": r"(credited|debited)",
-                "amount": r"Rs\s*([\d,]+\.\d{2})",
-                "account_number": r"Acct\s*([Xx*\d]+)",
-                "bank": r"([A-Za-z\s]+Bank)",  
-                "merchant":r";([^;]+)credited"
+            regex_for_sbi = {
+                "transaction_type": r"(debited|credited)",
+                "amount": r"by\s*([\d,]+\.\d{1,2})",
+                "account_number": r"A/C\s*([Xx\d]+)",
+                "bank": r"-(\w+)",
+                "merchant": r"trf\s*to\s*([A-Za-z\s]+)(?=\s*Refno)"
             }
+
+            method_pattern = r"\bUPI\b"
  
             extracted_info = {}
  
-            for key, pattern in regex_for_icici.items():
+            for key, pattern in regex_for_sbi.items():
                 match = re.search(pattern, message)
                 if match:
                     extracted_info[key] = match.group(1).strip()
+            extracted_info["method"] = "UPI" if re.search(method_pattern, message) else None
                     
             # merchant = extracted_info.get("merchant", "Unknown")
             # merchant_slug = ParseSmsController.generate_slug(merchant)
-            # return merchant_slug
+            # return merchant
  
             expense = Expense(
                 cat=parsed_text,
@@ -391,8 +394,8 @@ class ParseSmsController:
                 bank=extracted_info.get("bank", ''),
                 date=formatted_date,
                 amount=float(extracted_info.get("amount", '0.00').replace(',', '')),
-                type=extracted_info.get("transaction_type", ''),  
-                method="",
+                type=extracted_info.get("transaction_type", 'N/A'),  
+                method=extracted_info.get("method", 'N/A'),
                 manual=False,
                 user_phone=user['phone']
 
@@ -402,6 +405,51 @@ class ParseSmsController:
  
             return str(expense.id)
         
+        ################################################################################################
+        
+        elif any(bank in parsed_bank_name for bank in ["Dear SBI"]):
+            return "h8i"
+ 
+            regex_for_sbi = {
+                "transaction_type": r"(debited|credited)",
+                "amount": r"by\s*([\d,]+\.\d{1,2})",
+                "account_number": r"A/C\s*([Xx\d]+)",
+                "bank": r"-(\w+)",
+                "merchant": r"trf\s*to\s*([A-Za-z\s]+)(?=\s*Refno)"
+            }
+
+            method_pattern = r"\bUPI\b"
+ 
+            extracted_info = {}
+ 
+            for key, pattern in regex_for_sbi.items():
+                match = re.search(pattern, message)
+                if match:
+                    extracted_info[key] = match.group(1).strip()
+            extracted_info["method"] = "UPI" if re.search(method_pattern, message) else None
+                    
+            # merchant = extracted_info.get("merchant", "Unknown")
+            # merchant_slug = ParseSmsController.generate_slug(merchant)
+            # return merchant
+ 
+            expense = Expense(
+                cat=parsed_text,
+                merchant=extracted_info.get("merchant", "Unknown"),
+                merchant_slug=ParseSmsController.generate_slug(extracted_info.get("merchant", "Unknown")),
+                acct=extracted_info.get("account_number", 'N/A'),
+                bank=extracted_info.get("bank", ''),
+                date=formatted_date,
+                amount=float(extracted_info.get("amount", '0.00').replace(',', '')),
+                type=extracted_info.get("transaction_type", 'N/A'),  
+                method=extracted_info.get("method", 'N/A'),
+                manual=False,
+                user_phone=user['phone']
+
+            )
+ 
+            expense.save()
+ 
+            return str(expense.id)
         
         ######################################################################################## sbi
         
