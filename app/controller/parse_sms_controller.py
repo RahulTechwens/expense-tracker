@@ -120,7 +120,8 @@ class ParseSmsController:
                     type = type_msg[0] if type_msg else '',
                     method = "N/A",
                     manual= False,
-                    user_phone=user['phone']
+                    user_phone=user['phone'],
+                    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 )
                 
                 
@@ -156,7 +157,8 @@ class ParseSmsController:
                     type = transaction_type[0] if transaction_type[0] else '',
                     method = "",
                     manual= False,
-                    user_phone=user['phone']
+                    user_phone=user['phone'],
+                    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     
                 )
                 expense.save()
@@ -188,7 +190,8 @@ class ParseSmsController:
                     type = transaction_type if transaction_type else '',
                     method = "",
                     manual= False,
-                    user_phone=user['phone']
+                    user_phone=user['phone'],
+                    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     
                 )
                 expense.save()
@@ -213,6 +216,8 @@ class ParseSmsController:
                     type = transaction_type if transaction_type else '',
                     method = "",
                     manual= False,
+                    user_phone=user['phone'],
+                    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 )
                 expense.save()
                 return str(expense.id)
@@ -249,7 +254,8 @@ class ParseSmsController:
                 manual= False,
                 keywords=[],
                 vector=[],
-                user_phone=user['phone']
+                user_phone=user['phone'],
+                created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 
             )
             expense.save()
@@ -279,7 +285,9 @@ class ParseSmsController:
                 type=extracted_info["transaction_type"],
                 method = "N/A",
                 manual= False,
-                user_phone=user['phone']
+                user_phone=user['phone'],
+                created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                
                 
             )
             expense.save()
@@ -352,7 +360,9 @@ class ParseSmsController:
                 type=extracted_info.get("transaction_type", ''),  
                 method="",
                 manual=False,
-                user_phone=user['phone']
+                user_phone=user['phone'],
+                created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                
 
             )
  
