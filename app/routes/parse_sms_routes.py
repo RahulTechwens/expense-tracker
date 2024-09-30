@@ -1,5 +1,6 @@
 # from fastapi import APIRouter, Request  # type: ignore
 from app.controller.parse_sms_controller import ParseSmsController
+from app.controller.parse_sms_controller_gemini import AIParseSmsController
 from fastapi import Request # type: ignore 
 import re
 from fastapi import APIRouter, Request, Depends
@@ -18,9 +19,13 @@ def verify_token(request: Request):
     check_token = OtpHelper.is_token_valid(token)
     return check_token
 
+# @router.post("/parse/sms")
+# async def parsing_message(request: Request, user: str = Depends(verify_token)):
+#     return await ParseSmsController().parsing_sms(request, user)
+
 @router.post("/parse/sms")
 async def parsing_message(request: Request, user: str = Depends(verify_token)):
-    return await ParseSmsController().parsing_sms(request, user)
+    return await AIParseSmsController().sms_pasring(request, user)
 
 
 @router.get("/pasrse/sms/test")
