@@ -27,7 +27,7 @@ class AuthService:
 
         if not check_user:
             # Create a new user if they don't exist
-            new_user = User(phone=phone, status=True)
+            new_user = User(phone=phone, status=True,  is_new_user = True)
             new_user.save()
 
         # Generate and save a new OTP
@@ -53,16 +53,22 @@ class AuthService:
         # Check if OTP exists for the provided phone
         check_otp = Otp.objects(phone=phone).first()
 
+        
         if check_otp and check_otp.otp_val == otp:
             # OTP matches, generate token
             token = OtpHelper.generate_token(phone)
 
+            check_user = User.objects(phone=phone).first()
+            is_new_user = check_user.is_new_user
+            # For first time login the is_new_user flag will True for the next time it will be set to False
+            check_user.update(is_new_user=False)
+            
             # No need to manually delete the OTP because TTL will expire it
-
             return {
                 "status": True,
                 "message": "OTP verified successfully.",
-                "token": token
+                "token": token,
+                "is_new_user":is_new_user
             }
 
         return {

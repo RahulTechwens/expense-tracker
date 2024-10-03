@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 class User(Document):
     phone = StringField(required=False)
     status = BooleanField(required=False)
+    is_new_user = BooleanField(required=False)
 
 class Otp(Document):
     otp_val = StringField(required=False)
