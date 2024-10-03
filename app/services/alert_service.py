@@ -7,7 +7,7 @@ from mongoengine.queryset.visitor import Q # type: ignore
 from bson import ObjectId # type: ignore
 from fastapi import HTTPException
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorClient
+# from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 from app.db.connection import MongoDB
 
