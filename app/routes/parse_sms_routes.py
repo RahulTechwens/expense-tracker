@@ -46,6 +46,6 @@ async def parsing_message(request: Request):
 
 
 
-@router.post("/parse/sms")
-async def parsing_message(request: Request, user: str = Depends(verify_token)):
-    return await AIParseSmsController().sms_pasring(request, user)
+# @router.post("/parse/sms")
+# async def parsing_message(request: Request, user: str = Depends(verify_token)):
+#     return await AIParseSmsController().sms_pasring(request, user)
